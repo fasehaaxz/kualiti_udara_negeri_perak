@@ -30,8 +30,21 @@
     }
 
     * { box-sizing: border-box; }
-    html, body { font-family: 'Plus Jakarta Sans', sans-serif; width: 100%; height: 100%; margin: 0; padding: 0; background: var(--bg-main); color: var(--text-dark); overflow: hidden; }
-    #app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    html, body { 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        width: 100%; 
+        min-height: 100%; 
+        margin: 0; 
+        padding: 0; 
+        background: var(--bg-main); 
+        color: var(--text-dark); 
+    }
+
+    #app-container { 
+        display: flex; 
+        flex-direction: column; 
+        min-height: 100vh; 
+    }
 
     /* MODAL PILIHAN BAHASA */
     .lang-modal-overlay {
@@ -40,43 +53,44 @@
         z-index: 3000; display: flex; justify-content: center; align-items: center;
     }
     .lang-card {
-        background: var(--bg-card); padding: 30px 40px; border-radius: 16px;
+        background: var(--bg-card); padding: 24px 30px; border-radius: 16px;
         text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border);
         max-width: 420px; width: 90%;
     }
-    .lang-card h2 { margin-top: 0; font-size: 1.3rem; color: var(--primary); }
-    .lang-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
+    .lang-card h2 { margin-top: 0; font-size: 1.2rem; color: var(--primary); }
+    .lang-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
     .lang-btn-group { display: flex; gap: 12px; justify-content: center; }
     .lang-btn {
-        flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);
-        background: var(--bg-main); color: var(--text-dark); font-weight: 700; font-size: 0.9rem;
+        flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+        background: var(--bg-main); color: var(--text-dark); font-weight: 700; font-size: 0.85rem;
         cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .lang-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-    /* HEADER */
+    /* HEADER RESPONSIVE */
     .header { 
         background: var(--bg-header); 
-        padding: 6px 20px; 
+        padding: 8px 12px; 
         display: flex; 
         align-items: center; 
         justify-content: space-between;
         border-bottom: 2px solid var(--border); 
         z-index: 1000; 
         box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        height: 60px;
+        min-height: 60px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     
     .brand-section { 
         display: flex; 
         align-items: center; 
-        gap: 16px; 
+        gap: 10px; 
         flex: 0 0 auto; 
     }
 
-    /* LOGO POLITEKNIK UNGKU OMAR */
     .header-logo-img {
-        height: 48px;
+        height: 38px;
         width: auto;
         object-fit: contain;
         filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15));
@@ -85,30 +99,24 @@
     .header-title { 
         flex: 1; 
         text-align: left; 
-        padding-left: 15px;
+        padding-left: 5px;
+        min-width: 180px;
     }
     
-    /* TAJUK TULISAN BERNYALA (NEON GLOW STESEN) */
     .header-title h1 { 
         margin: 0; 
-        font-size: 1.15rem; 
+        font-size: 0.95rem; 
         font-weight: 800; 
         color: var(--primary); 
         letter-spacing: -0.01em;
         text-transform: uppercase;
         animation: neonGlow 2s ease-in-out infinite alternate;
+        line-height: 1.2;
     }
 
     @keyframes neonGlow {
-        0% {
-            text-shadow: 0 0 2px rgba(100, 28, 42, 0.2), 0 0 5px rgba(100, 28, 42, 0.3);
-        }
-        50% {
-            text-shadow: 0 0 5px rgba(128, 35, 54, 0.6), 0 0 12px rgba(128, 35, 54, 0.4), 0 0 18px rgba(100, 28, 42, 0.3);
-        }
-        100% {
-            text-shadow: 0 0 2px rgba(100, 28, 42, 0.2), 0 0 6px rgba(100, 28, 42, 0.4);
-        }
+        0% { text-shadow: 0 0 2px rgba(100, 28, 42, 0.2); }
+        100% { text-shadow: 0 0 6px rgba(100, 28, 42, 0.4); }
     }
 
     .header-controls { 
@@ -122,8 +130,13 @@
     .icon-btn:hover { background: #ebdce0; }
     .icon-btn.active-toggle { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
-    /* SUSUN ATUR UTAMA & SKRIN PENUH */
-    .main-workspace { display: flex; flex: 1; position: relative; height: calc(100vh - 60px); overflow: hidden; }
+    /* SUSUN ATUR UTAMA */
+    .main-workspace { 
+        display: flex; 
+        flex: 1; 
+        position: relative; 
+        overflow: hidden; 
+    }
 
     /* PANEL TETAPAN KIRI */
     .left-panel { 
@@ -135,11 +148,10 @@
         display: flex; 
         flex-direction: column; 
         gap: 10px; 
-        z-index: 500; 
+        z-index: 1050; 
         overflow-y: auto;
-        transition: margin-left 0.3s ease;
+        transition: transform 0.3s ease, margin-left 0.3s ease;
     }
-    .left-panel.collapsed { margin-left: -290px; }
 
     .custom-side-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); }
     .card-title-group { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 0.88rem; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
@@ -157,15 +169,16 @@
     .btn-secondary:hover { opacity: 0.9; }
 
     /* KONTAINER PETA SKRIN PENUH */
-    #map-wrapper-outer { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    #map-container { flex: 1; position: relative; display: grid; gap: 6px; padding: 6px; background: #e3d9dc; transition: all 0.3s ease; height: 100%; }
+    #map-wrapper-outer { flex: 1; display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
+    #map-container { flex: 1; position: relative; display: grid; gap: 10px; padding: 8px; background: #e3d9dc; transition: all 0.3s ease; }
+    
     .grid-1 { grid-template-columns: 1fr; }
     .grid-2 { grid-template-columns: 1fr 1fr; }
     .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-    .map-card-widget { display: flex; flex-direction: column; height: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); position: relative; }
-    .map-area-wrapper { flex: 1; position: relative; min-height: 0; }
-    .map-instance { width: 100%; height: 100%; }
+    .map-card-widget { display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); position: relative; min-height: 480px; }
+    .map-area-wrapper { flex: 1; position: relative; min-height: 320px; }
+    .map-instance { width: 100%; height: 100%; min-height: 320px; }
 
     .map-badge-year {
         position: absolute; top: 8px; right: 8px; z-index: 999; background: var(--primary); color: #ffffff; font-weight: 700; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -173,28 +186,28 @@
 
     /* LEGEND */
     .map-legend-inside-left {
-        position: absolute; bottom: 8px; left: 8px; z-index: 999; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(4px); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 170px;
+        position: absolute; bottom: 8px; left: 8px; z-index: 999; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(4px); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 150px;
     }
-    .legend-labels { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.62rem; margin-bottom: 2px; }
+    .legend-labels { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.60rem; margin-bottom: 2px; }
     .legend-bar { height: 5px; border-radius: 4px; background: linear-gradient(to right, var(--color-baik), var(--color-sederhana), var(--color-tidak-sihat)); margin-bottom: 2px; }
     .legend-values { display: flex; justify-content: space-between; font-size: 0.58rem; color: var(--text-muted); font-weight: 600; }
 
-    /* BAHAGIAN BAWAH JADUAL */
+    /* BAHAGIAN BAWAH JADUAL (RESPONSIVE) */
     .map-table-bottom-wrapper {
-        height: 165px; border-top: 2px solid var(--border); background: var(--bg-card); padding: 4px 8px; display: flex; gap: 8px; overflow: hidden; flex-shrink: 0;
+        min-height: 150px; border-top: 2px solid var(--border); background: var(--bg-card); padding: 8px; display: flex; gap: 8px; flex-shrink: 0; overflow-x: auto;
     }
 
-    .bottom-split-left { flex: 1; display: flex; flex-direction: column; overflow: hidden; gap: 2px; }
-    .table-bottom-title { font-size: 0.68rem; font-weight: 700; margin-bottom: 2px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; white-space: nowrap; }
+    .bottom-split-left { flex: 1; display: flex; flex-direction: column; width: 100%; gap: 4px; }
+    .table-bottom-title { font-size: 0.72rem; font-weight: 700; margin-bottom: 2px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; white-space: nowrap; }
 
-    .side-data-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; table-layout: fixed; }
-    .side-data-table th { background: #f4ecee; padding: 3px 4px; text-align: left; font-weight: 700; border-bottom: 1px solid var(--border); }
-    .side-data-table td { padding: 3px 4px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .side-data-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+    .side-data-table th { background: #f4ecee; padding: 4px 6px; text-align: left; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .side-data-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 
-    .status-badge { padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.58rem; text-align: center; display: inline-block; white-space: nowrap; }
-    .status-baik { background-color: #dbeafe; color: #1e40af; }        /* Biru */
-    .status-sederhana { background-color: #d1fae5; color: #065f46; }   /* Hijau */
-    .status-tidak-sihat { background-color: #fef3c7; color: #92400e; } /* Kuning/Oren */
+    .status-badge { padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.60rem; text-align: center; display: inline-block; white-space: nowrap; }
+    .status-baik { background-color: #dbeafe; color: #1e40af; }
+    .status-sederhana { background-color: #d1fae5; color: #065f46; }
+    .status-tidak-sihat { background-color: #fef3c7; color: #92400e; }
     .status-tiada { background-color: #e2e8f0; color: #475569; }
 
     /* MARKER ICON & MAP LABELS */
@@ -211,7 +224,7 @@
 
     /* POPUP STESEN LEAFLET */
     .leaflet-popup-content-wrapper { border-radius: 10px; padding: 0; overflow: hidden; }
-    .station-popup-card { font-family: 'Plus Jakarta Sans', sans-serif; padding: 12px; width: 220px; }
+    .station-popup-card { font-family: 'Plus Jakarta Sans', sans-serif; padding: 12px; width: 200px; }
     .station-popup-card h4 { margin: 0 0 4px 0; font-size: 0.85rem; color: var(--primary); font-weight: 800; }
     
     .gmaps-btn {
@@ -223,18 +236,18 @@
 
     .popup-param-sec { margin-bottom: 6px; }
     .popup-param-title { font-weight: 700; font-size: 0.7rem; color: var(--primary); }
-    .popup-data-grid { display: flex; justify-content: space-between; font-size: 0.68rem; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; margin-top: 2px; }
+    .popup-data-grid { display: flex; justify-content: space-between; font-size: 0.65rem; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; margin-top: 2px; }
     .popup-btn-analisis { display: block; width: 100%; text-align: center; background: var(--primary); color: white; border: none; padding: 6px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; margin-top: 8px; cursor: pointer; }
 
     /* MODAL POPUP GENERAL */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 27, 28, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; justify-content: center; align-items: center; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 27, 28, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 10px; }
     .modal-overlay.active { display: flex; }
     .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; }
 
     /* MODAL STESEN DETAIL */
-    .split-modal { background: var(--bg-card); width: 90%; max-width: 950px; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--border); max-height: 90vh; }
+    .split-modal { background: var(--bg-card); width: 100%; max-width: 950px; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
     .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-    .modal-body-split { display: flex; gap: 12px; flex: 1; overflow: hidden; }
+    .modal-body-split { display: flex; gap: 12px; flex: 1; flex-direction: row; }
     .split-left { flex: 1.2; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
     .split-right { flex: 1; overflow-y: auto; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
     .chart-box { width: 100%; height: 260px; }
@@ -246,23 +259,77 @@
     /* LAYOUT PDF PREVIEW */
     .pdf-preview-card { background: #ffffff; color: #000000; width: 98vw; height: 96vh; border-radius: 8px; padding: 12px 18px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .pdf-header { border-bottom: 2px solid var(--primary); padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .pdf-title-main { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin: 0; text-transform: uppercase; }
-    .pdf-title-sub { font-size: 0.78rem; color: #333; margin: 1px 0 0 0; }
+    .pdf-title-main { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin: 0; text-transform: uppercase; }
+    .pdf-title-sub { font-size: 0.75rem; color: #333; margin: 1px 0 0 0; }
     .pdf-layout-body { display: flex; gap: 10px; flex: 1; margin-top: 4px; overflow: hidden; }
     .pdf-grid-maps { display: flex; gap: 8px; flex: 3.5; height: 100%; }
     
     .pdf-map-column { flex: 1; border: 1px solid #ccc; border-radius: 6px; display: flex; flex-direction: column; background: #fff; height: 100%; overflow: hidden; }
-    .pdf-map-header { background: var(--primary); color: white; text-align: center; font-weight: 700; font-size: 0.8rem; padding: 3px; }
+    .pdf-map-header { background: var(--primary); color: white; text-align: center; font-weight: 700; font-size: 0.78rem; padding: 3px; }
     .pdf-map-box { flex: 1; height: 100%; min-height: 0; background: #f8fafc; position: relative; }
     
     .pdf-table { width: 100%; border-collapse: collapse; font-size: 0.62rem; margin-bottom: 4px; table-layout: fixed; }
     .pdf-table th { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 3px; }
     .pdf-table td { border: 1px solid #cbd5e1; padding: 3px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .pdf-sidebar-info { flex: 1; min-width: 180px; max-width: 220px; border-left: 1px solid #e2e8f0; padding-left: 8px; font-size: 0.68rem; display: flex; flex-direction: column; gap: 6px; }
+    .pdf-sidebar-info { flex: 1; min-width: 160px; max-width: 220px; border-left: 1px solid #e2e8f0; padding-left: 8px; font-size: 0.68rem; display: flex; flex-direction: column; gap: 6px; }
     .pdf-info-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; }
     .pdf-info-title { font-weight: 700; margin-bottom: 3px; color: var(--primary); font-size: 0.7rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; }
     .north-arrow { text-align: right; font-size: 1.2rem; color: #000; }
+
+    /* =========================================================
+       MEDIA QUERIES KHAS UNTUK TELEFON & TABLET (MOBILE FRIENDLY)
+       ========================================================= */
+    @media screen and (max-width: 768px) {
+        .header-title h1 { font-size: 0.8rem; }
+        .header-logo-img { height: 30px; }
+        .header { padding: 6px 10px; }
+
+        /* Panel Sisi Bertindak Sebagai Pop-out Overlay */
+        .left-panel {
+            position: fixed;
+            top: 58px;
+            left: 0;
+            bottom: 0;
+            height: calc(100vh - 58px);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            transform: translateX(0);
+        }
+        .left-panel.collapsed {
+            transform: translateX(-100%);
+            margin-left: 0;
+        }
+
+        /* Grid Peta Menjadi 1 Kolum Sahaja Pada Skrin Sempit */
+        .grid-2, .grid-3 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .map-card-widget {
+            min-height: 400px;
+        }
+
+        .modal-body-split {
+            flex-direction: column;
+        }
+
+        .pdf-layout-body {
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .pdf-grid-maps {
+            flex-direction: column;
+        }
+
+        .pdf-sidebar-info {
+            max-width: 100%;
+            border-left: none;
+            border-top: 1px solid #e2e8f0;
+            padding-left: 0;
+            padding-top: 8px;
+        }
+    }
 
     @media print {
         @page { size: landscape; margin: 0; }
@@ -280,7 +347,7 @@
     <!-- MODAL POPUP PILIHAN BAHASA -->
     <div class="lang-modal-overlay" id="lang-modal">
         <div class="lang-card">
-            <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-globe"></i></div>
+            <div style="font-size: 2.2rem; color: var(--primary); margin-bottom: 8px;"><i class="fas fa-globe"></i></div>
             <h2>Pilih Bahasa / Select Language</h2>
             <p>Sila pilih bahasa pilihan anda untuk meneruskan ke platform WebGIS.</p>
             <div class="lang-btn-group">
@@ -315,7 +382,7 @@
         <div class="main-workspace">
             
             <!-- PANEL TETAPAN KIRI -->
-            <div class="left-panel" id="left-panel">
+            <div class="left-panel collapsed" id="left-panel">
                 
                 <div class="custom-side-card">
                     <div class="card-title-group">
@@ -323,7 +390,7 @@
                         <span data-i18n="display_settings">Tetapan Utama</span>
                     </div>
 
-                    <!-- Parameter (IPU Diletakkan di bahagian paling bawah) -->
+                    <!-- Parameter -->
                     <div class="custom-form-group">
                         <label class="custom-form-label" data-i18n="parameter">Parameter</label>
                         <select class="custom-select-box" id="side-select-param" onchange="tukarParameter(this.value)">
@@ -427,10 +494,10 @@
                 </div>
             </div>
 
-            <div id="pdf-document-content" style="display:flex; flex-direction:column; height:100%;">
+            <div id="pdf-document-content" style="display:flex; flex-direction:column; height:100%; overflow-y:auto;">
                 <div class="pdf-header">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="height:60px;">
+                        <div style="height:50px;">
                             <img src="logo_puo.png" alt="Logo Politeknik Ungku Omar" style="height:100%; width:auto; object-fit:contain;">
                         </div>
                         <div>
@@ -495,7 +562,7 @@
     var stesenDipilih = 'ALL';
 
     var PERAK_CENTER = [4.69, 101.12];
-    var PERAK_ZOOM = 8.2;
+    var PERAK_ZOOM = 8;
 
     var mapInstances = [];
     var mapMarkerStores = {};
@@ -685,7 +752,6 @@
         setTimeout(() => mapInstances.forEach(m => m.invalidateSize()), 300);
     }
 
-    /* HAD BACAAN KESIHATAN DAN WARNA PENETAPAN */
     function dapatkanWarna(val, param) {
         if (val === 'N/A' || val === '-' || val === undefined || val === null) return '#94a3b8';
         if (param === 'CO') return val < 0.50 ? '#3b82f6' : val <= 0.80 ? '#10b981' : '#f59e0b';
@@ -849,7 +915,6 @@
 
             var m = L.map(mapDiv.id, { zoomControl: true, attributionControl: false }).setView(PERAK_CENTER, PERAK_ZOOM);
             
-            /* DITUKAR KEPADA ESRI GRAY (LIGHT) BASEMAP */
             L.tileLayer(ESRI_GRAY_URL, { maxZoom: 18, attribution: ESRI_ATTRIBUTION }).addTo(m);
 
             if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
@@ -951,6 +1016,10 @@
     }
 
     function paparPetaAction() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('left-panel').classList.add('collapsed');
+            document.getElementById('btn-toggle-sidebar').classList.remove('active-toggle');
+        }
         rekaSemuaPeta();
     }
 
@@ -1047,7 +1116,6 @@
                         zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false
                     }).setView(currentCenter, currentZoom);
 
-                    /* DITUKAR KEPADA ESRI GRAY (LIGHT) PADA PDF MODAL */
                     L.tileLayer(ESRI_GRAY_URL, { attribution: ESRI_ATTRIBUTION }).addTo(miniMap);
                     
                     if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
