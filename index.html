@@ -87,6 +87,8 @@
         text-align: left; 
         padding-left: 15px;
     }
+    
+    /* TAJUK TULISAN BERNYALA (NEON GLOW STESEN) */
     .header-title h1 { 
         margin: 0; 
         font-size: 1.15rem; 
@@ -94,6 +96,19 @@
         color: var(--primary); 
         letter-spacing: -0.01em;
         text-transform: uppercase;
+        animation: neonGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes neonGlow {
+        0% {
+            text-shadow: 0 0 2px rgba(100, 28, 42, 0.2), 0 0 5px rgba(100, 28, 42, 0.3);
+        }
+        50% {
+            text-shadow: 0 0 5px rgba(128, 35, 54, 0.6), 0 0 12px rgba(128, 35, 54, 0.4), 0 0 18px rgba(100, 28, 42, 0.3);
+        }
+        100% {
+            text-shadow: 0 0 2px rgba(100, 28, 42, 0.2), 0 0 6px rgba(100, 28, 42, 0.4);
+        }
     }
 
     .header-controls { 
@@ -164,7 +179,7 @@
     .legend-bar { height: 5px; border-radius: 4px; background: linear-gradient(to right, var(--color-baik), var(--color-sederhana), var(--color-tidak-sihat)); margin-bottom: 2px; }
     .legend-values { display: flex; justify-content: space-between; font-size: 0.58rem; color: var(--text-muted); font-weight: 600; }
 
-    /* BAHAGIAN BAWAH JADUAL (DIKEMASKINI SUPAYA FULL SCREEN TANPA SKROL) */
+    /* BAHAGIAN BAWAH JADUAL */
     .map-table-bottom-wrapper {
         height: 165px; border-top: 2px solid var(--border); background: var(--bg-card); padding: 4px 8px; display: flex; gap: 8px; overflow: hidden; flex-shrink: 0;
     }
@@ -283,8 +298,8 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 
-                <!-- LOGO POLITEKNIK UNGKU OMAR (PUO) -->
-                <img src="logo_puo.PNG" alt="Logo Politeknik Ungku Omar" class="header-logo-img">
+                <!-- LOGO POLITEKNIK UNGKU OMAR -->
+                <img src="logo_puo.png" alt="Logo Politeknik Ungku Omar" class="header-logo-img">
             </div>
 
             <div class="header-title">
@@ -308,13 +323,13 @@
                         <span data-i18n="display_settings">Tetapan Utama</span>
                     </div>
 
-                    <!-- Parameter -->
+                    <!-- Parameter (IPU Diletakkan di bahagian paling bawah) -->
                     <div class="custom-form-group">
                         <label class="custom-form-label" data-i18n="parameter">Parameter</label>
                         <select class="custom-select-box" id="side-select-param" onchange="tukarParameter(this.value)">
                             <option value="CO" selected>Karbon Monoksida (CO)</option>
-                            <option value="IPU" id="opt-ipu-param">Indeks Pencemar Udara (IPU)</option>
                             <option value="NO2">Nitrogen Dioksida (NO2)</option>
+                            <option value="IPU" id="opt-ipu-param">Indeks Pencemar Udara (IPU)</option>
                         </select>
                     </div>
 
@@ -416,8 +431,7 @@
                 <div class="pdf-header">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div style="height:60px;">
-                            <!-- LOGO POLITEKNIK UNGKU OMAR UNTUK PDF -->
-                            <img src="logo_puo.PNG" alt="Logo Politeknik Ungku Omar" style="height:100%; width:auto; object-fit:contain;">
+                            <img src="logo_puo.png" alt="Logo Politeknik Ungku Omar" style="height:100%; width:auto; object-fit:contain;">
                         </div>
                         <div>
                             <h1 class="pdf-title-main" data-i18n="app_title">Platform WebGIS Perbandingan Kualiti Udara di Perak</h1>
@@ -489,6 +503,10 @@
     var pdfChartInstances = {};
     var isSyncing = false;
     var bahasaSemasa = 'ms';
+
+    /* PAUTAN TILE MAP ESRI GRAY (LIGHT) */
+    var ESRI_GRAY_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+    var ESRI_ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ';
 
     var kamusBahasa = {
         "ms": {
@@ -586,21 +604,21 @@
             { "station": "Taiping", "co": 0.45, "no2": 0.0075, "ipu": 58, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.42, 0.45, 0.48, 0.44, 0.46, 0.43, 0.41, 0.47, 0.45, 0.46, 0.44, 0.45] },
             { "station": "Tasek, Ipoh", "co": 0.82, "no2": 0.0108, "ipu": 72, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.78, 0.80, 0.85, 0.82, 0.84, 0.81, 0.79, 0.86, 0.83, 0.82, 0.80, 0.82] },
             { "station": "Pegoh, Ipoh", "co": 0.65, "no2": 0.0096, "ipu": 65, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.60, 0.62, 0.68, 0.65, 0.66, 0.63, 0.61, 0.69, 0.66, 0.65, 0.64, 0.65] },
-            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 78, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Seri Manjung", "co": "-", "no2": "-", "ipu": 78, "lat": 4.2003, "lng": 100.6634, "bulanan": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"] },
             { "station": "Tanjung Malim", "co": 0.90, "no2": 0.0065, "ipu": 110, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.85, 0.88, 0.92, 0.90, 0.91, 0.89, 0.87, 0.94, 0.91, 0.90, 0.88, 0.90] }
         ],
         2020: [
             { "station": "Taiping", "co": 0.38, "no2": 0.0058, "ipu": 42, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.35, 0.37, 0.40, 0.38, 0.39, 0.36, 0.34, 0.41, 0.38, 0.37, 0.36, 0.38] },
             { "station": "Tasek, Ipoh", "co": 0.60, "no2": 0.0084, "ipu": 55, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.55, 0.58, 0.62, 0.60, 0.61, 0.59, 0.56, 0.63, 0.60, 0.59, 0.58, 0.60] },
             { "station": "Pegoh, Ipoh", "co": 0.50, "no2": 0.0073, "ipu": 48, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.46, 0.48, 0.52, 0.50, 0.51, 0.49, 0.47, 0.53, 0.50, 0.49, 0.48, 0.50] },
-            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 60, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Seri Manjung", "co": "-", "no2": "-", "ipu": 60, "lat": 4.2003, "lng": 100.6634, "bulanan": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"] },
             { "station": "Tanjung Malim", "co": 0.75, "no2": 0.0051, "ipu": 85, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.70, 0.72, 0.78, 0.75, 0.76, 0.74, 0.71, 0.79, 0.75, 0.74, 0.73, 0.75] }
         ],
         2023: [
             { "station": "Taiping", "co": 0.30, "no2": 0.0039, "ipu": 45, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.28, 0.29, 0.32, 0.30, 0.31, 0.29, 0.27, 0.33, 0.30, 0.29, 0.28, 0.30] },
             { "station": "Tasek, Ipoh", "co": 0.70, "no2": 0.0094, "ipu": 68, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.65, 0.68, 0.73, 0.70, 0.71, 0.69, 0.66, 0.74, 0.70, 0.69, 0.68, 0.70] },
             { "station": "Pegoh, Ipoh", "co": 0.58, "no2": 0.0081, "ipu": 61, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.54, 0.56, 0.60, 0.58, 0.59, 0.57, 0.55, 0.61, 0.58, 0.57, 0.56, 0.58] },
-            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 75, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Seri Manjung", "co": "-", "no2": "-", "ipu": 75, "lat": 4.2003, "lng": 100.6634, "bulanan": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"] },
             { "station": "Tanjung Malim", "co": 0.88, "no2": 0.0058, "ipu": 102, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.82, 0.85, 0.90, 0.88, 0.89, 0.87, 0.84, 0.91, 0.88, 0.87, 0.86, 0.88] }
         ]
     };
@@ -634,7 +652,7 @@
     }
 
     function formatNilai(val) {
-        if (val === 'N/A' || val === undefined || val === null) return 'N/A';
+        if (val === 'N/A' || val === '-' || val === undefined || val === null) return '-';
         if (typeof val === 'number') {
             if (paramSemasa === 'CO') {
                 return val.toFixed(2);
@@ -646,10 +664,10 @@
     }
 
     function dapatkanNilaiParam(st, param) {
-        if (!st) return 'N/A';
-        if (param === 'CO') return (st.co !== undefined && st.co !== null) ? st.co : 'N/A';
-        if (param === 'NO2') return (st.no2 !== undefined && st.no2 !== null) ? st.no2 : 'N/A';
-        return (st.ipu !== undefined && st.ipu !== null) ? st.ipu : 'N/A';
+        if (!st) return '-';
+        if (param === 'CO') return (st.co !== undefined && st.co !== null) ? st.co : '-';
+        if (param === 'NO2') return (st.no2 !== undefined && st.no2 !== null) ? st.no2 : '-';
+        return (st.ipu !== undefined && st.ipu !== null) ? st.ipu : '-';
     }
 
     function dapatkanNamaParamDisplay() {
@@ -669,7 +687,7 @@
 
     /* HAD BACAAN KESIHATAN DAN WARNA PENETAPAN */
     function dapatkanWarna(val, param) {
-        if (val === 'N/A' || val === undefined || val === null) return '#94a3b8';
+        if (val === 'N/A' || val === '-' || val === undefined || val === null) return '#94a3b8';
         if (param === 'CO') return val < 0.50 ? '#3b82f6' : val <= 0.80 ? '#10b981' : '#f59e0b';
         if (param === 'NO2') return val < 0.0060 ? '#3b82f6' : val <= 0.0090 ? '#10b981' : '#f59e0b';
         return val <= 50 ? '#3b82f6' : val <= 100 ? '#10b981' : '#f59e0b';
@@ -677,7 +695,7 @@
 
     function dapatkanStatusText(val, param) {
         var dict = kamusBahasa[bahasaSemasa];
-        if (val === 'N/A' || val === undefined || val === null) return { text: dict['no_data'], class: 'status-tiada' };
+        if (val === 'N/A' || val === '-' || val === undefined || val === null) return { text: dict['no_data'], class: 'status-tiada' };
         if (param === 'CO') {
             if (val < 0.50) return { text: dict['good'], class: 'status-baik' };
             if (val <= 0.80) return { text: dict['moderate'], class: 'status-sederhana' };
@@ -797,7 +815,7 @@
             list.forEach(function(st) {
                 var valRaw = dapatkanNilaiParam(st, paramSemasa);
                 var valFormatted = formatNilai(valRaw);
-                var stObj = dapatkanStatusText(valRaw === 'N/A' ? 'N/A' : valRaw, paramSemasa);
+                var stObj = dapatkanStatusText(valRaw === '-' ? '-' : valRaw, paramSemasa);
                 
                 rowsHtml += `
                     <tr>
@@ -830,11 +848,12 @@
             container.appendChild(widgetCard);
 
             var m = L.map(mapDiv.id, { zoomControl: true, attributionControl: false }).setView(PERAK_CENTER, PERAK_ZOOM);
-            var tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-            L.tileLayer(tileUrl, { subdomains: 'abcd', maxZoom: 19 }).addTo(m);
+            
+            /* DITUKAR KEPADA ESRI GRAY (LIGHT) BASEMAP */
+            L.tileLayer(ESRI_GRAY_URL, { maxZoom: 18, attribution: ESRI_ATTRIBUTION }).addTo(m);
 
             if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
-                L.geoJSON(json_DAERAH_PERAK_0, { style: { color: '#641c2a', weight: 1.5, fillColor: '#802336', fillOpacity: 0.03 } }).addTo(m);
+                L.geoJSON(json_DAERAH_PERAK_0, { style: { color: '#641c2a', weight: 1.8, fillColor: '#802336', fillOpacity: 0.05 } }).addTo(m);
             }
 
             list.forEach(function(st) {
@@ -990,7 +1009,7 @@
                 list.forEach(st => {
                     var valRaw = dapatkanNilaiParam(st, paramSemasa);
                     var valFormatted = formatNilai(valRaw);
-                    var stObj = dapatkanStatusText(valRaw === 'N/A' ? 'N/A' : valRaw, paramSemasa);
+                    var stObj = dapatkanStatusText(valRaw === '-' ? '-' : valRaw, paramSemasa);
                     tableRows += `
                         <tr>
                             <td title="${st.station}"><b>${st.station}</b></td>
@@ -1028,7 +1047,8 @@
                         zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false
                     }).setView(currentCenter, currentZoom);
 
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd' }).addTo(miniMap);
+                    /* DITUKAR KEPADA ESRI GRAY (LIGHT) PADA PDF MODAL */
+                    L.tileLayer(ESRI_GRAY_URL, { attribution: ESRI_ATTRIBUTION }).addTo(miniMap);
                     
                     if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
                         L.geoJSON(json_DAERAH_PERAK_0, { style: { color: '#641c2a', weight: 1.2, fillColor: '#802336', fillOpacity: 0.05 } }).addTo(miniMap);
@@ -1096,8 +1116,8 @@
                 dataTahunan[2023].forEach(stRef => {
                     if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && stRef.station === 'Seri Manjung') return;
                     var st = rawList.find(s => s.station === stRef.station);
-                    var valRaw = st ? dapatkanNilaiParam(st, paramSemasa) : 'N/A';
-                    dataPdf.push(valRaw === 'N/A' ? null : valRaw);
+                    var valRaw = st ? dapatkanNilaiParam(st, paramSemasa) : '-';
+                    dataPdf.push((valRaw === '-' || valRaw === 'N/A') ? null : valRaw);
                 });
 
                 datasetsCombined.push({
@@ -1196,7 +1216,7 @@
                 var list = dataTahunan[yr] || [];
                 var st = list.find(s => s.station === namaStesen);
                 var isNoData = (namaStesen === "Seri Manjung" && (paramSemasa === "CO" || paramSemasa === "NO2"));
-                htmlTable += `<td>${isNoData ? 'N/A' : (st ? formatNilai(st.bulanan[i]) : '-')}</td>`;
+                htmlTable += `<td>${isNoData ? '-' : (st ? formatNilai(st.bulanan[i]) : '-')}</td>`;
             });
             htmlTable += '</tr>';
         }
