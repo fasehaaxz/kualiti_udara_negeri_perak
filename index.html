@@ -3,768 +3,1217 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform WebGIS Kualiti Udara Negeri Perak</title>
+    <title>Platform WebGIS Perbandingan Kualiti Udara di Perak</title>
 
     <!-- Leaflet & FontAwesome -->
     <link rel="stylesheet" href="css/leaflet.css">
     <link rel="stylesheet" href="css/fontawesome-all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
     :root {
-        --bg-main: #f8fafc;
+        --bg-main: #f4f1f2; 
         --bg-card: #ffffff;
-        --text-dark: #0f172a;
-        --text-muted: #64748b;
-        --primary: #0284c7;
-        --border: #e2e8f0;
-        --grid-color: rgba(0,0,0,0.05);
-    }
+        --bg-header: #faf8f9;
+        --text-dark: #1e1b1c;
+        --text-muted: #6b5e62;
+        --primary: #641c2a; /* Burgundy / Maroon */
+        --primary-light: #802336;
+        --border: #dcd2d5;
+        --shadow: 0 4px 20px -2px rgba(100, 28, 42, 0.08);
 
-    body.dark-mode {
-        --bg-main: #0f172a;
-        --bg-card: #1e293b;
-        --text-dark: #f8fafc;
-        --text-muted: #94a3b8;
-        --border: #334155;
-        --grid-color: rgba(255,255,255,0.08);
+        /* Warna Status */
+        --color-baik: #3b82f6;      /* Biru */
+        --color-sederhana: #10b981; /* Hijau */
+        --color-tidak-sihat: #f59e0b; /* Kuning / Warning */
     }
 
     * { box-sizing: border-box; }
+    html, body { font-family: 'Plus Jakarta Sans', sans-serif; width: 100%; height: 100%; margin: 0; padding: 0; background: var(--bg-main); color: var(--text-dark); overflow: hidden; }
+    #app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-    html, body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        width: 100%; height: 100%;
-        margin: 0; padding: 0;
-        background-color: var(--bg-main);
-        color: var(--text-dark);
-        overflow: hidden;
+    /* MODAL PILIHAN BAHASA */
+    .lang-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(30, 27, 28, 0.85); backdrop-filter: blur(8px);
+        z-index: 3000; display: flex; justify-content: center; align-items: center;
     }
-
-    #app-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        width: 100vw;
+    .lang-card {
+        background: var(--bg-card); padding: 30px 40px; border-radius: 16px;
+        text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border);
+        max-width: 420px; width: 90%;
     }
+    .lang-card h2 { margin-top: 0; font-size: 1.3rem; color: var(--primary); }
+    .lang-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
+    .lang-btn-group { display: flex; gap: 12px; justify-content: center; }
+    .lang-btn {
+        flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);
+        background: var(--bg-main); color: var(--text-dark); font-weight: 700; font-size: 0.9rem;
+        cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .lang-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
 
     /* HEADER */
-    .header {
-        background: var(--bg-card);
-        padding: 10px 20px;
-        display: flex;
+    .header { 
+        background: var(--bg-header); 
+        padding: 6px 20px; 
+        display: flex; 
+        align-items: center; 
         justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid var(--border);
-        z-index: 1000;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border-bottom: 2px solid var(--border); 
+        z-index: 1000; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        height: 60px;
+    }
+    
+    .brand-section { 
+        display: flex; 
+        align-items: center; 
+        gap: 16px; 
+        flex: 0 0 auto; 
     }
 
-    .header-title h1 {
-        margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-dark);
-    }
-    .header-title p {
-        margin: 1px 0 0 0; font-size: 0.72rem; color: var(--text-muted);
-    }
-
-    .header-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    /* LOGO POLITEKNIK UNGKU OMAR */
+    .header-logo-img {
+        height: 48px;
+        width: auto;
+        object-fit: contain;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15));
     }
 
-    .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.78rem;
-        font-weight: 600;
+    .header-title { 
+        flex: 1; 
+        text-align: left; 
+        padding-left: 15px;
+    }
+    .header-title h1 { 
+        margin: 0; 
+        font-size: 1.15rem; 
+        font-weight: 800; 
+        color: var(--primary); 
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
     }
 
-    .select-input {
-        background: var(--bg-main);
-        color: var(--text-dark);
-        border: 1px solid var(--border);
-        padding: 5px 8px;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
+    .header-controls { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        flex: 0 0 auto;
     }
 
-    .icon-btn {
-        background: var(--bg-main);
-        border: 1px solid var(--border);
-        color: var(--text-dark);
-        padding: 6px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.8rem;
+    .icon-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dark); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .icon-btn:hover { background: #ebdce0; }
+    .icon-btn.active-toggle { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+
+    /* SUSUN ATUR UTAMA & SKRIN PENUH */
+    .main-workspace { display: flex; flex: 1; position: relative; height: calc(100vh - 60px); overflow: hidden; }
+
+    /* PANEL TETAPAN KIRI */
+    .left-panel { 
+        width: 290px; 
+        min-width: 290px; 
+        background: var(--bg-main); 
+        border-right: 1px solid var(--border); 
+        padding: 12px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 10px; 
+        z-index: 500; 
+        overflow-y: auto;
+        transition: margin-left 0.3s ease;
+    }
+    .left-panel.collapsed { margin-left: -290px; }
+
+    .custom-side-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); }
+    .card-title-group { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 0.88rem; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+    .custom-form-group { margin-bottom: 8px; }
+    .custom-form-label { display: block; font-size: 0.76rem; font-weight: 700; margin-bottom: 3px; color: var(--text-dark); }
+    .custom-select-box { width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-dark); font-size: 0.76rem; outline: none; }
+    
+    .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+    .radio-item, .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+    .radio-item input, .checkbox-item input { accent-color: var(--primary); cursor: pointer; width: 14px; height: 14px; }
+
+    .btn-maroon { width: 100%; background-color: var(--primary); color: #ffffff; border: none; padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; margin-bottom: 8px; transition: opacity 0.2s; }
+    .btn-maroon:hover { opacity: 0.9; }
+    .btn-secondary { width: 100%; background-color: var(--primary-light); color: #ffffff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; transition: opacity 0.2s; }
+    .btn-secondary:hover { opacity: 0.9; }
+
+    /* KONTAINER PETA SKRIN PENUH */
+    #map-wrapper-outer { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    #map-container { flex: 1; position: relative; display: grid; gap: 6px; padding: 6px; background: #e3d9dc; transition: all 0.3s ease; height: 100%; }
+    .grid-1 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .map-card-widget { display: flex; flex-direction: column; height: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); position: relative; }
+    .map-area-wrapper { flex: 1; position: relative; min-height: 0; }
+    .map-instance { width: 100%; height: 100%; }
+
+    .map-badge-year {
+        position: absolute; top: 8px; right: 8px; z-index: 999; background: var(--primary); color: #ffffff; font-weight: 700; font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    /* PETA UTAMA */
-    #map-container {
-        flex: 1;
-        width: 100%;
-        height: 100%;
-        position: relative;
+    /* LEGEND */
+    .map-legend-inside-left {
+        position: absolute; bottom: 8px; left: 8px; z-index: 999; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(4px); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 170px;
+    }
+    .legend-labels { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.62rem; margin-bottom: 2px; }
+    .legend-bar { height: 5px; border-radius: 4px; background: linear-gradient(to right, var(--color-baik), var(--color-sederhana), var(--color-tidak-sihat)); margin-bottom: 2px; }
+    .legend-values { display: flex; justify-content: space-between; font-size: 0.58rem; color: var(--text-muted); font-weight: 600; }
+
+    /* BAHAGIAN BAWAH JADUAL (DIKEMASKINI SUPAYA FULL SCREEN TANPA SKROL) */
+    .map-table-bottom-wrapper {
+        height: 165px; border-top: 2px solid var(--border); background: var(--bg-card); padding: 4px 8px; display: flex; gap: 8px; overflow: hidden; flex-shrink: 0;
     }
 
-    #map { width: 100%; height: 100%; }
+    .bottom-split-left { flex: 1; display: flex; flex-direction: column; overflow: hidden; gap: 2px; }
+    .table-bottom-title { font-size: 0.68rem; font-weight: 700; margin-bottom: 2px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; white-space: nowrap; }
 
-    /* Custom Marker Segitiga */
-    .triangle-marker {
-        width: 0; height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-bottom: 15px solid #0ea5e9;
-        cursor: pointer;
-        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
-        transition: transform 0.2s;
+    .side-data-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; table-layout: fixed; }
+    .side-data-table th { background: #f4ecee; padding: 3px 4px; text-align: left; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .side-data-table td { padding: 3px 4px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .status-badge { padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.58rem; text-align: center; display: inline-block; white-space: nowrap; }
+    .status-baik { background-color: #dbeafe; color: #1e40af; }        /* Biru */
+    .status-sederhana { background-color: #d1fae5; color: #065f46; }   /* Hijau */
+    .status-tidak-sihat { background-color: #fef3c7; color: #92400e; } /* Kuning/Oren */
+    .status-tiada { background-color: #e2e8f0; color: #475569; }
+
+    /* MARKER ICON & MAP LABELS */
+    .custom-pulsing-marker { position: relative; width: 28px; height: 28px; cursor: pointer; }
+    .pulse-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; animation: pulse-anim 2s infinite; opacity: 0.5; pointer-events: none; }
+    @keyframes pulse-anim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; } }
+
+    .triangle-badge { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 18px solid var(--triangle-color, #10b981); position: absolute; top: 4px; left: 4px; cursor: pointer; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3)); }
+    .triangle-badge i { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 0.5rem; color: #ffffff; }
+
+    .map-station-label {
+        background: rgba(30, 27, 28, 0.88); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
-    .triangle-marker:hover { transform: scale(1.3); }
 
-    /* MODAL POPUP COMPACT (FIT TO SCREEN) */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(15, 23, 42, 0.45);
-        backdrop-filter: blur(4px);
-        z-index: 2000;
-        display: none;
-        justify-content: center;
-        align-items: center;
+    /* POPUP STESEN LEAFLET */
+    .leaflet-popup-content-wrapper { border-radius: 10px; padding: 0; overflow: hidden; }
+    .station-popup-card { font-family: 'Plus Jakarta Sans', sans-serif; padding: 12px; width: 220px; }
+    .station-popup-card h4 { margin: 0 0 4px 0; font-size: 0.85rem; color: var(--primary); font-weight: 800; }
+    
+    .gmaps-btn {
+        display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 700;
+        background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; text-decoration: none;
+        margin-bottom: 8px; border: 1px solid #bae6fd; transition: background 0.2s;
     }
+    .gmaps-btn:hover { background: #bae6fd; }
 
+    .popup-param-sec { margin-bottom: 6px; }
+    .popup-param-title { font-weight: 700; font-size: 0.7rem; color: var(--primary); }
+    .popup-data-grid { display: flex; justify-content: space-between; font-size: 0.68rem; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; margin-top: 2px; }
+    .popup-btn-analisis { display: block; width: 100%; text-align: center; background: var(--primary); color: white; border: none; padding: 6px; border-radius: 5px; font-size: 0.7rem; font-weight: 700; margin-top: 8px; cursor: pointer; }
+
+    /* MODAL POPUP GENERAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 27, 28, 0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; justify-content: center; align-items: center; }
     .modal-overlay.active { display: flex; }
+    .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; }
 
-    .compact-modal {
-        background: var(--bg-card);
-        width: 92%;
-        max-width: 650px;
-        border-radius: 16px;
-        padding: 16px 20px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-        display: flex;
-        flex-direction: column;
-        border: 1px solid var(--border);
-        animation: fadeIn 0.2s ease-in-out;
-    }
+    /* MODAL STESEN DETAIL */
+    .split-modal { background: var(--bg-card); width: 90%; max-width: 950px; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; border: 1px solid var(--border); max-height: 90vh; }
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .modal-body-split { display: flex; gap: 12px; flex: 1; overflow: hidden; }
+    .split-left { flex: 1.2; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+    .split-right { flex: 1; overflow-y: auto; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+    .chart-box { width: 100%; height: 260px; }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+    .data-table th, .data-table td { padding: 5px; text-align: center; border-bottom: 1px solid var(--border); }
+    .data-table th { background: var(--bg-card); font-weight: 700; }
 
-    .sheet-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid var(--border);
-    }
+    /* LAYOUT PDF PREVIEW */
+    .pdf-preview-card { background: #ffffff; color: #000000; width: 98vw; height: 96vh; border-radius: 8px; padding: 12px 18px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .pdf-header { border-bottom: 2px solid var(--primary); padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .pdf-title-main { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin: 0; text-transform: uppercase; }
+    .pdf-title-sub { font-size: 0.78rem; color: #333; margin: 1px 0 0 0; }
+    .pdf-layout-body { display: flex; gap: 10px; flex: 1; margin-top: 4px; overflow: hidden; }
+    .pdf-grid-maps { display: flex; gap: 8px; flex: 3.5; height: 100%; }
+    
+    .pdf-map-column { flex: 1; border: 1px solid #ccc; border-radius: 6px; display: flex; flex-direction: column; background: #fff; height: 100%; overflow: hidden; }
+    .pdf-map-header { background: var(--primary); color: white; text-align: center; font-weight: 700; font-size: 0.8rem; padding: 3px; }
+    .pdf-map-box { flex: 1; height: 100%; min-height: 0; background: #f8fafc; position: relative; }
+    
+    .pdf-table { width: 100%; border-collapse: collapse; font-size: 0.62rem; margin-bottom: 4px; table-layout: fixed; }
+    .pdf-table th { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 3px; }
+    .pdf-table td { border: 1px solid #cbd5e1; padding: 3px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .pdf-sidebar-info { flex: 1; min-width: 180px; max-width: 220px; border-left: 1px solid #e2e8f0; padding-left: 8px; font-size: 0.68rem; display: flex; flex-direction: column; gap: 6px; }
+    .pdf-info-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; }
+    .pdf-info-title { font-weight: 700; margin-bottom: 3px; color: var(--primary); font-size: 0.7rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; }
+    .north-arrow { text-align: right; font-size: 1.2rem; color: #000; }
 
-    .sheet-title h2 { margin: 0; font-size: 1.05rem; font-weight: 700; }
-    .sheet-title p { margin: 1px 0 0 0; font-size: 0.72rem; color: var(--text-muted); }
-
-    .close-btn {
-        background: none; border: none; font-size: 1.3rem;
-        color: var(--text-muted); cursor: pointer; line-height: 1;
+    @media print {
+        @page { size: landscape; margin: 0; }
+        body { background: #fff !important; color: #000 !important; overflow: visible !important; }
+        #app-container, .modal-overlay:not(#pdf-preview-modal) { display: none !important; }
+        .modal-overlay#pdf-preview-modal { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background: #fff !important; display: block !important; backdrop-filter: none !important; }
+        .pdf-preview-card { width: 100% !important; height: 100% !important; border-radius: 0 !important; padding: 10px !important; box-shadow: none !important; border: none !important; }
+        .no-print, .sheet-header { display: none !important; }
+        .pdf-map-box { height: 100% !important; }
     }
-
-    /* BARIS PERBANDINGAN DAN PERCENTAGE */
-    .compact-summary-row {
-        background: var(--bg-main);
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 0.75rem;
-        border: 1px solid var(--border);
-    }
-
-    .stat-badge {
-        font-weight: 700;
-        padding: 4px 8px;
-        border-radius: 6px;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        font-size: 0.72rem;
-    }
-
-    /* TAB MENU */
-    .tab-container {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 10px;
-    }
-
-    .tab-btn {
-        background: var(--bg-main);
-        border: 1px solid var(--border);
-        padding: 5px 12px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        cursor: pointer;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .tab-btn.active {
-        background: var(--primary);
-        color: #ffffff;
-        border-color: var(--primary);
-    }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* GRAF SAID & KEMAS */
-    .chart-box {
-        width: 100%;
-        height: 220px;
-        margin-bottom: 5px;
-    }
-
-    /* JADUAL ULTRA KOMPAK */
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.7rem;
-    }
-    .data-table th, .data-table td {
-        padding: 3px 4px;
-        text-align: center;
-        border-bottom: 1px solid var(--border);
-    }
-    .data-table th {
-        background: var(--bg-main);
-        font-weight: 700;
-        color: var(--text-dark);
-    }
-    .data-table tr:hover {
-        background: var(--bg-main);
-    }
-
-    /* LEGEND PETA */
-    .map-legend {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        background: var(--bg-card);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.72rem;
-        font-weight: 600;
-        display: flex;
-        gap: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        z-index: 999;
-        border: 1px solid var(--border);
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
     </style>
 </head>
 <body>
 
-    <div id="app-container">
-        <!-- HEADER -->
-        <header class="header">
-            <div class="header-title">
-                <h1 id="txt-title">WebGIS Kualiti Udara Perak</h1>
-                <p id="txt-subtitle">Platform Pemantauan Kepekatan Gas</p>
-            </div>
-
-            <div class="header-controls">
-                <div class="filter-group">
-                    <span id="lbl-year-filter">📅 Tahun:</span>
-                    <select id="select-year" class="select-input" onchange="tukarTahun(this.value)">
-                        <option value="2018">2018</option>
-                        <option value="2020">2020</option>
-                        <option value="2023" selected>2023</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <span id="lbl-param-filter">🧪 Parameter:</span>
-                    <select id="select-param" class="select-input" onchange="tukarParameter(this.value)">
-                        <option value="ALL" id="opt-all">Semua Gas</option>
-                        <option value="CO" id="opt-co">Karbon Monoksida</option>
-                        <option value="NO2" id="opt-no2">Nitrogen Dioksida</option>
-                    </select>
-                </div>
-
-                <button class="icon-btn" onclick="toggleDarkMode()"><i class="fas fa-moon" id="theme-icon"></i></button>
-                <button class="icon-btn" onclick="tukarBahasa()"><span id="lang-text">EN</span></button>
-            </div>
-        </header>
-
-        <!-- PETA UTAMA -->
-        <div id="map-container">
-            <div id="map"></div>
-
-            <div class="map-legend">
-                <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div> <span id="lgd-good">Baik</span></div>
-                <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> <span id="lgd-mod">Sederhana</span></div>
-                <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> <span id="lgd-high">Tinggi</span></div>
+    <!-- MODAL POPUP PILIHAN BAHASA -->
+    <div class="lang-modal-overlay" id="lang-modal">
+        <div class="lang-card">
+            <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-globe"></i></div>
+            <h2>Pilih Bahasa / Select Language</h2>
+            <p>Sila pilih bahasa pilihan anda untuk meneruskan ke platform WebGIS.</p>
+            <div class="lang-btn-group">
+                <button class="lang-btn" onclick="pilihBahasa('ms')">Bahasa Melayu</button>
+                <button class="lang-btn" onclick="pilihBahasa('en')">English</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL POPUP -->
+    <div id="app-container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="brand-section">
+                <button class="icon-btn active-toggle" id="btn-toggle-sidebar" onclick="toggleSidebar()" title="Tetapan">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <!-- LOGO POLITEKNIK UNGKU OMAR (PUO) -->
+                <img src="logo_puo.PNG" alt="Logo Politeknik Ungku Omar" class="header-logo-img">
+            </div>
+
+            <div class="header-title">
+                <h1 id="txt-title" data-i18n="app_title">Platform WebGIS Perbandingan Kualiti Udara di Perak</h1>
+            </div>
+
+            <div class="header-controls">
+                <button class="icon-btn" onclick="tukarBahasaHeader()" id="btn-lang-toggle"><i class="fas fa-language"></i> <span id="txt-lang-code">EN</span></button>
+            </div>
+        </header>
+
+        <!-- RUANG KERJA UTAMA -->
+        <div class="main-workspace">
+            
+            <!-- PANEL TETAPAN KIRI -->
+            <div class="left-panel" id="left-panel">
+                
+                <div class="custom-side-card">
+                    <div class="card-title-group">
+                        <i class="fas fa-cog"></i>
+                        <span data-i18n="display_settings">Tetapan Utama</span>
+                    </div>
+
+                    <!-- Parameter -->
+                    <div class="custom-form-group">
+                        <label class="custom-form-label" data-i18n="parameter">Parameter</label>
+                        <select class="custom-select-box" id="side-select-param" onchange="tukarParameter(this.value)">
+                            <option value="CO" selected>Karbon Monoksida (CO)</option>
+                            <option value="IPU" id="opt-ipu-param">Indeks Pencemar Udara (IPU)</option>
+                            <option value="NO2">Nitrogen Dioksida (NO2)</option>
+                        </select>
+                    </div>
+
+                    <!-- Mod Paparan -->
+                    <div class="custom-form-group">
+                        <label class="custom-form-label" data-i18n="display_mode">Mod Paparan</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="display_mode" value="single" checked onchange="tukarModPaparan('single')"> <span data-i18n="mode_single">Satu Tahun</span></label>
+                            <label class="radio-item"><input type="radio" name="display_mode" value="compare" onchange="tukarModPaparan('compare')"> <span data-i18n="mode_compare">Perbandingan Tahun</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Tahun Paparan -->
+                    <div class="custom-form-group">
+                        <label class="custom-form-label" data-i18n="map_years">Tahun Paparan Peta</label>
+                        
+                        <div class="radio-group" id="container-years-single">
+                            <label class="radio-item"><input type="radio" name="rad_year" value="2018"> 2018</label>
+                            <label class="radio-item"><input type="radio" name="rad_year" value="2020"> 2020</label>
+                            <label class="radio-item"><input type="radio" name="rad_year" value="2023" checked> 2023</label>
+                        </div>
+
+                        <div class="checkbox-group" id="container-years-compare" style="display:none;">
+                            <label class="checkbox-item"><input type="checkbox" class="chk-year" value="2018" checked> 2018</label>
+                            <label class="checkbox-item"><input type="checkbox" class="chk-year" value="2020" checked> 2020</label>
+                            <label class="checkbox-item"><input type="checkbox" class="chk-year" value="2023" checked> 2023</label>
+                        </div>
+                    </div>
+
+                    <button class="btn-maroon" onclick="paparPetaAction()"><i class="fas fa-map"></i> <span data-i18n="show_map">Papar Peta</span></button>
+
+                    <!-- Lokasi Stesen -->
+                    <div class="custom-form-group">
+                        <label class="custom-form-label" data-i18n="station_location">Lokasi Stesen</label>
+                        <select class="custom-select-box" id="side-select-station" onchange="fokusLokasiStesen(this.value)">
+                            <option value="ALL" data-i18n="all_stations">-- Semua Stesen --</option>
+                            <option value="Taiping">Taiping</option>
+                            <option value="Tasek, Ipoh">Tasek, Ipoh</option>
+                            <option value="Pegoh, Ipoh">Pegoh, Ipoh</option>
+                            <option value="Seri Manjung">Seri Manjung</option>
+                            <option value="Tanjung Malim">Tanjung Malim</option>
+                        </select>
+                        <button class="btn-secondary" onclick="fokusLokasiStesen(document.getElementById('side-select-station').value)"><i class="fas fa-map-marker-alt"></i> <span data-i18n="btn_find_station">Cari Lokasi Stesen</span></button>
+                    </div>
+
+                </div>
+
+                <!-- EKSPORT LAPORAN PDF -->
+                <div class="custom-side-card">
+                    <div class="card-title-group"><i class="fas fa-file-pdf"></i> <span data-i18n="export_report">Eksport PDF</span></div>
+                    <button class="btn-maroon" style="margin-bottom:6px;" onclick="bukaPreviewPDF('map')"><i class="fas fa-map-marked-alt"></i> <span data-i18n="pdf_map_btn">PDF Peta & Stesen</span></button>
+                    <button class="btn-maroon" style="margin-bottom:0;" onclick="bukaPreviewPDF('chart')"><i class="fas fa-chart-line"></i> <span data-i18n="pdf_chart_btn">PDF Perbandingan Graf</span></button>
+                </div>
+
+            </div>
+
+            <!-- RUANG PETA BERBILANG -->
+            <div id="map-wrapper-outer">
+                <div id="map-container" class="grid-1"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL POPUP ANALISIS STESEN -->
     <div class="modal-overlay" id="detail-modal">
-        <div class="compact-modal">
+        <div class="split-modal">
             <div class="sheet-header">
-                <div class="sheet-title">
-                    <h2 id="modal-station-name">Nama Stesen</h2>
-                    <p id="modal-station-sub">Maklumat Terperinci Kualiti Udara</p>
+                <div>
+                    <h2 id="modal-station-name" style="margin:0; font-size:1.05rem;">Nama Stesen</h2>
+                    <p style="margin:0; font-size:0.72rem; color:var(--text-muted);" data-i18n="detail_subtitle">Perbandingan Terperinci Bulan/Tahun</p>
                 </div>
                 <button class="close-btn" onclick="tutupModal()">&times;</button>
             </div>
 
-            <!-- BARIS PERBANDINGAN DAN ANALISIS 1 LINE -->
-            <div class="compact-summary-row">
-                <div>
-                    <span id="lbl-compare-prefix">Bandingkan <strong id="lbl-curr-year">2023</strong> Dengan:</span>
-                    <select id="select-compare-year" class="select-input" onchange="kemaskiniPerbandingan()">
-                        <option value="2018">2018</option>
-                        <option value="2020">2020</option>
-                    </select>
+            <div class="modal-body-split">
+                <div class="split-left">
+                    <div class="chart-box"><canvas id="chartModal"></canvas></div>
                 </div>
-
-                <div style="display:flex; gap:6px;" id="analysis-summary-box">
-                    <!-- Peratus perubahan dipaparkan di sini secara dinamik -->
+                <div class="split-right">
+                    <div id="table-container"></div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- TAB MENU -->
-            <div class="tab-container">
-                <button class="tab-btn active" id="tab-btn-graf" onclick="bukaTab('tab-graf', this)"><i class="fas fa-chart-line"></i> Graf Trend</button>
-                <button class="tab-btn" id="tab-btn-jadual" onclick="bukaTab('tab-jadual', this)"><i class="fas fa-table"></i> Jadual Bulanan</button>
-            </div>
-
-            <!-- TAB 1: GRAF MODEN & WOW COLORS -->
-            <div id="tab-graf" class="tab-content active">
-                <div class="chart-box" id="box-chart-co">
-                    <canvas id="chartCO"></canvas>
-                </div>
-                <div class="chart-box" id="box-chart-no2" style="display:none;">
-                    <canvas id="chartNO2"></canvas>
+    <!-- MODAL PREVIEW PDF -->
+    <div class="modal-overlay" id="pdf-preview-modal">
+        <div class="pdf-preview-card">
+            <div class="sheet-header no-print" style="margin-bottom: 2px;">
+                <span style="font-weight:700; font-size:0.85rem; color:var(--primary);" data-i18n="pdf_preview">Pratonton Laporan PDF</span>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-maroon" style="padding:4px 12px; margin:0;" onclick="cetakPDF()"><i class="fas fa-print"></i> <span data-i18n="print_pdf">Cetak / Simpan PDF</span></button>
+                    <button class="close-btn" onclick="tutupPDFModal()">&times;</button>
                 </div>
             </div>
 
-            <!-- TAB 2: JADUAL COMPACT FIT-TO-SCREEN -->
-            <div id="tab-jadual" class="tab-content">
-                <div id="table-container"></div>
+            <div id="pdf-document-content" style="display:flex; flex-direction:column; height:100%;">
+                <div class="pdf-header">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="height:60px;">
+                            <!-- LOGO POLITEKNIK UNGKU OMAR UNTUK PDF -->
+                            <img src="logo_puo.PNG" alt="Logo Politeknik Ungku Omar" style="height:100%; width:auto; object-fit:contain;">
+                        </div>
+                        <div>
+                            <h1 class="pdf-title-main" data-i18n="app_title">Platform WebGIS Perbandingan Kualiti Udara di Perak</h1>
+                            <p class="pdf-title-sub" id="pdf-subtitle-param">Berdasarkan Karbon Monoksida (CO)</p>
+                            <p class="pdf-title-sub" id="pdf-subtitle-years" style="font-weight:700;">Tahun 2023</p>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="north-arrow"><i class="fas fa-compass"></i></div>
+                        <span style="font-size:0.6rem; font-weight:bold;" data-i18n="north">UTARA</span>
+                    </div>
+                </div>
+
+                <div class="pdf-layout-body">
+                    <div class="pdf-grid-maps" id="pdf-maps-list"></div>
+
+                    <div class="pdf-sidebar-info">
+                        <div class="pdf-info-box">
+                            <div class="pdf-info-title" data-i18n="parameter">Parameter</div>
+                            <div id="pdf-info-param-name" style="font-weight:bold;">Karbon Monoksida (CO)</div>
+                        </div>
+
+                        <!-- PETUNJUK STATUS PDF -->
+                        <div class="pdf-info-box">
+                            <div class="pdf-info-title" data-i18n="status_legend">Petunjuk Status</div>
+                            <div id="pdf-legend-range" style="display:flex; flex-direction:column; gap:3px; margin-top:2px;">
+                                <div><span style="display:inline-block; width:8px; height:8px; background:var(--color-baik); border-radius:50%;"></span> <span id="lbl-pdf-leg-1">Baik</span></div>
+                                <div><span style="display:inline-block; width:8px; height:8px; background:var(--color-sederhana); border-radius:50%;"></span> <span id="lbl-pdf-leg-2">Sederhana</span></div>
+                                <div><span style="display:inline-block; width:8px; height:8px; background:var(--color-tidak-sihat); border-radius:50%;"></span> <span id="lbl-pdf-leg-3">Tidak Sihat</span></div>
+                            </div>
+                        </div>
+
+                        <div class="pdf-info-box">
+                            <div class="pdf-info-title" data-i18n="map_index">Peta Indeks</div>
+                            <div style="font-size:0.62rem;">
+                                <div><span style="border:1px solid #641c2a; display:inline-block; width:10px; height:6px;"></span> <span data-i18n="perak_boundary">Sempadan Negeri Perak</span></div>
+                                <div><span style="display:inline-block; width:6px; height:6px; border-radius:50%; border:1px solid #000;"></span> <span data-i18n="monitoring_station">Stesen Pemantauan</span></div>
+                            </div>
+                        </div>
+
+                        <div class="pdf-info-box" style="margin-top:auto;">
+                            <div class="pdf-info-title" data-i18n="data_source">Sumber Data</div>
+                            <div data-i18n="doe">Jabatan Alam Sekitar (JAS)</div>
+                            <div style="margin-top:4px; font-weight:700;" data-i18n="export_date">Tarikh Eksport:</div>
+                            <div id="pdf-export-date">27 September 2026</div>
+                            <div style="margin-top:4px; font-size:0.58rem; color:#666;" data-i18n="prepared_by">Disediakan oleh Platform WebGIS Perak</div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 
     <script src="js/leaflet.js"></script>
     <script src="data/DAERAH_PERAK_0.js"></script>
     <script>
-    var bahasaAktif = 'ms';
-    var isDarkMode = false;
-    var tahunSemasa = '2023';
-    var paramSemasa = 'ALL';
-    var stesenAktifData = null;
+    var paramSemasa = 'CO';
+    var modPaparanSemasa = 'single';
+    var senaraiTahunAktif = ['2023'];
+    var stesenDipilih = 'ALL';
 
-    var terjemahan = {
-        ms: {
-            title: "WebGIS Kualiti Udara Perak",
-            subtitle: "Platform Pemantauan Kepekatan Gas",
-            lblYear: "📅 Tahun:",
-            lblParam: "🧪 Parameter:",
-            optAll: "Semua Gas",
-            optCO: "Karbon Monoksida",
-            optNO2: "Nitrogen Dioksida",
-            lgdGood: "Baik",
-            lgdMod: "Sederhana",
-            lgdHigh: "Tinggi",
-            modalSub: "Maklumat Terperinci Kualiti Udara",
-            comparePrefix: "Bandingkan ",
-            compareWith: " Dengan:",
-            btnGraf: "Graf Trend",
-            btnJadual: "Jadual Bulanan",
-            btnDetail: "📊 Lihat Analisis Terperinci",
-            tblMonth: "Bulan",
-            coName: "Karbon Monoksida",
-            no2Name: "Nitrogen Dioksida",
-            avgPrefix: "Purata ",
-            bulan: ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"]
+    var PERAK_CENTER = [4.69, 101.12];
+    var PERAK_ZOOM = 8.2;
+
+    var mapInstances = [];
+    var mapMarkerStores = {};
+    var pdfMapInstances = [];
+    var pdfChartInstances = {};
+    var isSyncing = false;
+    var bahasaSemasa = 'ms';
+
+    var kamusBahasa = {
+        "ms": {
+            "app_title": "Platform WebGIS Perbandingan Kualiti Udara di Perak",
+            "display_settings": "Tetapan Utama",
+            "parameter": "Parameter",
+            "param_ipu_label": "Indeks Pencemar Udara (IPU)",
+            "display_mode": "Mod Paparan",
+            "mode_single": "Satu Tahun",
+            "mode_compare": "Perbandingan Tahun",
+            "map_years": "Tahun Paparan Peta",
+            "station_location": "Lokasi Stesen",
+            "all_stations": "-- Semua Stesen --",
+            "btn_find_station": "Cari Lokasi Stesen",
+            "show_map": "Papar Peta",
+            "export_report": "Eksport PDF",
+            "pdf_map_btn": "PDF Peta & Stesen",
+            "pdf_chart_btn": "PDF Perbandingan Graf",
+            "station": "Stesen",
+            "reading": "Bacaan",
+            "status": "Status",
+            "good": "Baik",
+            "moderate": "Sederhana",
+            "unhealthy": "Tidak Sihat",
+            "no_data": "Tiada Data",
+            "station_info": "Maklumat Stesen",
+            "chart_comparison": "Graf Perbandingan Stesen (2018 - 2023)",
+            "detail_subtitle": "Perbandingan Terperinci Bulan/Tahun",
+            "pdf_preview": "Pratonton Laporan PDF",
+            "print_pdf": "Cetak / Simpan PDF",
+            "north": "UTARA",
+            "status_legend": "Petunjuk Status",
+            "map_index": "Peta Indeks",
+            "perak_boundary": "Sempadan Negeri Perak",
+            "monitoring_station": "Stesen Pemantauan",
+            "data_source": "Sumber Data",
+            "doe": "Jabatan Alam Sekitar (JAS)",
+            "export_date": "Tarikh Eksport:",
+            "prepared_by": "Disediakan oleh Platform WebGIS Perak",
+            "high": "Tidak Sihat",
+            "month": "Bulan",
+            "year": "Tahun",
+            "open_gmaps": "Buka di Google Maps",
+            "view_analysis": "Lihat Analisis Stesen →",
+            "based_on": "Berdasarkan "
         },
-        en: {
-            title: "Perak Air Quality WebGIS",
-            subtitle: "Gas Concentration Monitoring Platform",
-            lblYear: "📅 Year:",
-            lblParam: "🧪 Parameter:",
-            optAll: "All Gases",
-            optCO: "Carbon Monoxide",
-            optNO2: "Nitrogen Dioxide",
-            lgdGood: "Good",
-            lgdMod: "Moderate",
-            lgdHigh: "High",
-            modalSub: "Detailed Air Quality Information",
-            comparePrefix: "Compare ",
-            compareWith: " With:",
-            btnGraf: "Trend Chart",
-            btnJadual: "Monthly Table",
-            btnDetail: "📊 View Detailed Analysis",
-            tblMonth: "Month",
-            coName: "Carbon Monoxide",
-            no2Name: "Nitrogen Dioxide",
-            avgPrefix: "Average ",
-            bulan: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        "en": {
+            "app_title": "WebGIS Air Quality Comparison Platform in Perak",
+            "display_settings": "Main Settings",
+            "parameter": "Parameter",
+            "param_ipu_label": "Air Pollutant Index (API)",
+            "display_mode": "Display Mode",
+            "mode_single": "Single Year",
+            "mode_compare": "Year Comparison",
+            "map_years": "Display Map Years",
+            "station_location": "Station Location",
+            "all_stations": "-- All Stations --",
+            "btn_find_station": "Find Station Location",
+            "show_map": "Display Map",
+            "export_report": "Export PDF",
+            "pdf_map_btn": "Map & Station PDF",
+            "pdf_chart_btn": "Comparison Chart PDF",
+            "station": "Station",
+            "reading": "Reading",
+            "status": "Status",
+            "good": "Good",
+            "moderate": "Moderate",
+            "unhealthy": "Unhealthy",
+            "no_data": "No Data",
+            "station_info": "Station Info",
+            "chart_comparison": "Station Comparison Chart (2018 - 2023)",
+            "detail_subtitle": "Detailed Monthly/Yearly Comparison",
+            "pdf_preview": "PDF Report Preview",
+            "print_pdf": "Print / Save PDF",
+            "north": "NORTH",
+            "status_legend": "Status Legend",
+            "map_index": "Map Index",
+            "perak_boundary": "Perak Boundary",
+            "monitoring_station": "Monitoring Station",
+            "data_source": "Data Source",
+            "doe": "Department of Environment (DOE)",
+            "export_date": "Export Date:",
+            "prepared_by": "Prepared by Perak WebGIS Platform",
+            "high": "Unhealthy",
+            "month": "Month",
+            "year": "Year",
+            "open_gmaps": "Open in Google Maps",
+            "view_analysis": "View Station Analysis →",
+            "based_on": "Based on "
         }
     };
 
     var dataTahunan = {
         2018: [
-            { "station": "Pegoh, Ipoh", "co": 0.6016, "no2": 0.0096, "lat": 4.5533, "lng": 101.0802, "bulananCO": [0.5960, 0.6740, 0.5180, 0.5930, 0.6570, 0.5680, 0.5580, 0.6700, 0.6130, 0.5880, 0.5730, 0.6110], "bulananNO2": [0.0102, 0.0098, 0.0104, 0.0102, 0.0089, 0.0083, 0.0089, 0.0103, 0.0101, 0.0098, 0.0094, 0.0092] },
-            { "station": "Taiping", "co": 0.7034, "no2": 0.0075, "lat": 4.8989, "lng": 100.6791, "bulananCO": [0.6580, 0.8170, 0.7820, 0.6960, 0.6490, 0.7580, 0.5930, 0.7590, 0.6780, 0.6440, 0.7010, 0.7060], "bulananNO2": [0.0060, 0.0082, 0.0074, 0.0066, 0.0065, 0.0080, 0.0089, 0.0092, 0.0070, 0.0070, 0.0072, 0.0076] },
-            { "station": "Tanjung Malim", "co": 0.5855, "no2": 0.0065, "lat": 3.6878, "lng": 101.5245, "bulananCO": [0.6570, 0.5560, 0.5570, 0.6080, 0.5800, 0.5500, 0.5600, 0.5890, 0.5580, 0.6000, 0.6040, 0.6070], "bulananNO2": [0.0056, 0.0056, 0.0067, 0.0067, 0.0074, 0.0066, 0.0075, 0.0067, 0.0066, 0.0062, 0.0061, 0.0058] },
-            { "station": "Tasek, Ipoh", "co": 0.6414, "no2": 0.0108, "lat": 4.6294, "lng": 101.1167, "bulananCO": [0.7360, 0.7600, 0.6120, 0.7150, 0.6640, 0.5770, 0.6630, 0.7430, 0.5590, 0.5540, 0.5360, 0.5780], "bulananNO2": [0.0105, 0.0117, 0.0117, 0.0115, 0.0106, 0.0102, 0.0125, 0.0124, 0.0091, 0.0101, 0.0100, 0.0089] }
+            { "station": "Taiping", "co": 0.45, "no2": 0.0075, "ipu": 58, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.42, 0.45, 0.48, 0.44, 0.46, 0.43, 0.41, 0.47, 0.45, 0.46, 0.44, 0.45] },
+            { "station": "Tasek, Ipoh", "co": 0.82, "no2": 0.0108, "ipu": 72, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.78, 0.80, 0.85, 0.82, 0.84, 0.81, 0.79, 0.86, 0.83, 0.82, 0.80, 0.82] },
+            { "station": "Pegoh, Ipoh", "co": 0.65, "no2": 0.0096, "ipu": 65, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.60, 0.62, 0.68, 0.65, 0.66, 0.63, 0.61, 0.69, 0.66, 0.65, 0.64, 0.65] },
+            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 78, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Tanjung Malim", "co": 0.90, "no2": 0.0065, "ipu": 110, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.85, 0.88, 0.92, 0.90, 0.91, 0.89, 0.87, 0.94, 0.91, 0.90, 0.88, 0.90] }
         ],
         2020: [
-            { "station": "Pegoh, Ipoh", "co": 0.4540, "no2": 0.0073, "lat": 4.5533, "lng": 101.0802, "bulananCO": [0.4870, 0.5490, 0.3720, 0.3720, 0.3160, 0.4670, 0.4920, 0.5750, 0.4540, 0.4330, 0.3930, 0.5380], "bulananNO2": [0.0079, 0.0078, 0.0052, 0.0036, 0.0059, 0.0077, 0.0092, 0.0087, 0.0088, 0.0081, 0.0068, 0.0084] },
-            { "station": "Taiping", "co": 0.2705, "no2": 0.0069, "lat": 4.8989, "lng": 100.6791, "bulananCO": [0.3600, 0.3440, 0.2620, 0.2100, 0.1510, 0.2870, 0.2490, 0.2650, 0.2840, 0.3000, 0.2260, 0.3080], "bulananNO2": [0.0086, 0.0086, 0.0075, 0.0039, 0.0040, 0.0066, 0.0075, 0.0078, 0.0069, 0.0072, 0.0064, 0.0075] },
-            { "station": "Tanjung Malim", "co": 0.4951, "no2": 0.0049, "lat": 3.6878, "lng": 101.5245, "bulananCO": [0.4850, 0.5180, 0.5130, 0.4130, 0.4720, 0.5050, 0.4590, 0.5770, 0.5100, 0.4560, 0.4780, 0.5550], "bulananNO2": [0.0049, 0.0051, 0.0045, 0.0026, 0.0035, 0.0048, 0.0051, 0.0060, 0.0054, 0.0057, 0.0060, 0.0050] },
-            { "station": "Tasek, Ipoh", "co": 0.5518, "no2": 0.0079, "lat": 4.6294, "lng": 101.1167, "bulananCO": [0.7150, 0.5560, 0.5560, 0.4690, 0.4950, 0.5680, 0.5480, 0.5010, 0.4700, 0.5760, 0.5160, 0.6520], "bulananNO2": [0.0097, 0.0083, 0.0074, 0.0032, 0.0056, 0.0090, 0.0098, 0.0089, 0.0084, 0.0083, 0.0067, 0.0098] }
+            { "station": "Taiping", "co": 0.38, "no2": 0.0058, "ipu": 42, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.35, 0.37, 0.40, 0.38, 0.39, 0.36, 0.34, 0.41, 0.38, 0.37, 0.36, 0.38] },
+            { "station": "Tasek, Ipoh", "co": 0.60, "no2": 0.0084, "ipu": 55, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.55, 0.58, 0.62, 0.60, 0.61, 0.59, 0.56, 0.63, 0.60, 0.59, 0.58, 0.60] },
+            { "station": "Pegoh, Ipoh", "co": 0.50, "no2": 0.0073, "ipu": 48, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.46, 0.48, 0.52, 0.50, 0.51, 0.49, 0.47, 0.53, 0.50, 0.49, 0.48, 0.50] },
+            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 60, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Tanjung Malim", "co": 0.75, "no2": 0.0051, "ipu": 85, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.70, 0.72, 0.78, 0.75, 0.76, 0.74, 0.71, 0.79, 0.75, 0.74, 0.73, 0.75] }
         ],
         2023: [
-            { "station": "Pegoh, Ipoh", "co": 0.5080, "no2": 0.0059, "lat": 4.5533, "lng": 101.0802, "bulananCO": [0.5350, 0.6030, 0.5180, 0.4810, 0.4220, 0.4320, 0.4670, 0.4160, 0.4460, 0.6100, 0.5700, 0.5960], "bulananNO2": [0.0056, 0.0055, 0.0058, 0.0066, 0.0065, 0.0068, 0.0062, 0.0057, 0.0062, 0.0053, 0.0051, 0.0050] },
-            { "station": "Taiping", "co": 0.2708, "no2": 0.0075, "lat": 4.8989, "lng": 100.6791, "bulananCO": [0.3010, 0.2610, 0.2810, 0.1990, 0.2230, 0.3020, 0.2910, 0.2640, 0.3000, 0.2590, 0.2590, 0.3100], "bulananNO2": [0.0080, 0.0080, 0.0076, 0.0057, 0.0059, 0.0083, 0.0089, 0.0083, 0.0084, 0.0064, 0.0078, 0.0072] },
-            { "station": "Tanjung Malim", "co": 0.5068, "no2": 0.0060, "lat": 3.6878, "lng": 101.5245, "bulananCO": [0.5490, 0.4850, 0.5020, 0.5460, 0.5180, 0.5310, 0.4460, 0.4480, 0.4800, 0.5940, 0.4840, 0.4990], "bulananNO2": [0.0058, 0.0059, 0.0070, 0.0066, 0.0057, 0.0057, 0.0054, 0.0055, 0.0059, 0.0061, 0.0058, 0.0066] },
-            { "station": "Tasek, Ipoh", "co": 0.5833, "no2": 0.0077, "lat": 4.6294, "lng": 101.1167, "bulananCO": [0.6180, 0.5260, 0.6250, 0.5600, 0.5140, 0.6010, 0.5920, 0.6040, 0.6020, 0.6500, 0.5170, 0.5900], "bulananNO2": [0.0088, 0.0066, 0.0083, 0.0084, 0.0070, 0.0074, 0.0077, 0.0071, 0.0083, 0.0082, 0.0078, 0.0069] }
+            { "station": "Taiping", "co": 0.30, "no2": 0.0039, "ipu": 45, "lat": 4.8989, "lng": 100.6791, "bulanan": [0.28, 0.29, 0.32, 0.30, 0.31, 0.29, 0.27, 0.33, 0.30, 0.29, 0.28, 0.30] },
+            { "station": "Tasek, Ipoh", "co": 0.70, "no2": 0.0094, "ipu": 68, "lat": 4.6294, "lng": 101.1167, "bulanan": [0.65, 0.68, 0.73, 0.70, 0.71, 0.69, 0.66, 0.74, 0.70, 0.69, 0.68, 0.70] },
+            { "station": "Pegoh, Ipoh", "co": 0.58, "no2": 0.0081, "ipu": 61, "lat": 4.5533, "lng": 101.0802, "bulanan": [0.54, 0.56, 0.60, 0.58, 0.59, 0.57, 0.55, 0.61, 0.58, 0.57, 0.56, 0.58] },
+            { "station": "Seri Manjung", "co": null, "no2": null, "ipu": 75, "lat": 4.2003, "lng": 100.6634, "bulanan": [null, null, null, null, null, null, null, null, null, null, null, null] },
+            { "station": "Tanjung Malim", "co": 0.88, "no2": 0.0058, "ipu": 102, "lat": 3.7250, "lng": 101.5220, "bulanan": [0.82, 0.85, 0.90, 0.88, 0.89, 0.87, 0.84, 0.91, 0.88, 0.87, 0.86, 0.88] }
         ]
     };
 
-    var map, tileLayer, layerGroup;
-    var chartCO = null, chartNO2 = null;
-
-    function initMap() {
-        map = L.map('map', { zoomControl: true }).setView([4.5921, 101.0901], 9);
-        tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
-        layerGroup = L.layerGroup().addTo(map);
-
-        if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
-            L.geoJson(json_DAERAH_PERAK_0, {
-                style: { color: '#0ea5e9', weight: 1.5, opacity: 0.6, fillColor: '#bae6fd', fillOpacity: 0.15 }
-            }).addTo(map);
-        }
-
-        kemaskiniMarkers();
+    function pilihBahasa(lang) {
+        bahasaSemasa = lang;
+        document.getElementById('lang-modal').style.display = 'none';
+        document.getElementById('txt-lang-code').innerText = lang === 'ms' ? 'EN' : 'BM';
+        kemaskiniBahasaTeks();
+        rekaSemuaPeta();
     }
 
-    function dapatkanWarna(val) {
-        if (val > 0.6) return '#ef4444'; // Red (Tinggi)
-        if (val > 0.45) return '#eab308'; // Yellow (Sederhana)
-        return '#10b981'; // Green (Baik)
+    function tukarBahasaHeader() {
+        bahasaSemasa = bahasaSemasa === 'ms' ? 'en' : 'ms';
+        document.getElementById('txt-lang-code').innerText = bahasaSemasa === 'ms' ? 'EN' : 'BM';
+        kemaskiniBahasaTeks();
+        rekaSemuaPeta();
     }
 
-    function kemaskiniMarkers() {
-        layerGroup.clearLayers();
-        var senarai = dataTahunan[tahunSemasa] || [];
-        var t = terjemahan[bahasaAktif];
-
-        senarai.forEach(function(item) {
-            var color = dapatkanWarna(item.co);
-
-            // 1. TAMBAH BULATAN RADIUS WARRAN (BUFFER ZONE) - SAIZ 5KM
-            var circleRadius = L.circle([item.lat, item.lng], {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.25,
-                weight: 1.5,
-                radius: 5000 // Radius 5,000 meter (5km) - Seimbang & Tidak Terlalu Besar
-            });
-
-            // 2. MARKER SEGITIGA DI TENGAH
-            var customIcon = L.divIcon({
-                className: 'custom-triangle',
-                html: `<div class="triangle-marker" style="border-bottom-color: ${color};"></div>`,
-                iconSize: [16, 16], iconAnchor: [8, 8]
-            });
-
-            var marker = L.marker([item.lat, item.lng], { icon: customIcon });
-
-            var popupContent = `
-                <div style="font-family:'Plus Jakarta Sans',sans-serif; padding:2px;">
-                    <strong style="font-size:0.9rem; display:block; margin-bottom:3px;">${item.station}</strong>
-                    <div style="font-size:0.75rem; color:#64748b; margin-bottom:6px;">
-                        ${t.avgPrefix}${t.coName}: <strong>${item.co} ppm</strong><br>
-                        ${t.avgPrefix}${t.no2Name}: <strong>${item.no2} ppm</strong>
-                    </div>
-                    <button onclick="bukaAnalisisModal('${item.station}')" 
-                        style="width:100%; background:#0284c7; color:white; border:none; padding:5px; border-radius:5px; font-weight:600; font-size:0.72rem; cursor:pointer;">
-                        ${t.btnDetail}
-                    </button>
-                </div>
-            `;
-            
-            marker.bindPopup(popupContent);
-            circleRadius.bindPopup(popupContent);
-
-            layerGroup.addLayer(circleRadius);
-            layerGroup.addLayer(marker);
+    function kemaskiniBahasaTeks() {
+        var dict = kamusBahasa[bahasaSemasa];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            var key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerText = dict[key];
         });
+
+        var optIpu = document.getElementById('opt-ipu-param');
+        if (optIpu) {
+            optIpu.innerText = dict['param_ipu_label'];
+        }
     }
 
-    function tukarTahun(val) {
-        tahunSemasa = val;
-        kemaskiniMarkers();
-        kemaskiniPilihanDropdownPerbandingan();
+    function formatNilai(val) {
+        if (val === 'N/A' || val === undefined || val === null) return 'N/A';
+        if (typeof val === 'number') {
+            if (paramSemasa === 'CO') {
+                return val.toFixed(2);
+            } else if (paramSemasa === 'NO2') {
+                return val.toFixed(4);
+            }
+        }
+        return val;
+    }
+
+    function dapatkanNilaiParam(st, param) {
+        if (!st) return 'N/A';
+        if (param === 'CO') return (st.co !== undefined && st.co !== null) ? st.co : 'N/A';
+        if (param === 'NO2') return (st.no2 !== undefined && st.no2 !== null) ? st.no2 : 'N/A';
+        return (st.ipu !== undefined && st.ipu !== null) ? st.ipu : 'N/A';
+    }
+
+    function dapatkanNamaParamDisplay() {
+        var ipuText = bahasaSemasa === 'en' ? 'API' : 'IPU';
+        if (paramSemasa === 'CO') return 'CO';
+        if (paramSemasa === 'NO2') return 'NO₂';
+        return ipuText;
+    }
+
+    function toggleSidebar() {
+        var side = document.getElementById('left-panel');
+        var btn = document.getElementById('btn-toggle-sidebar');
+        side.classList.toggle('collapsed');
+        btn.classList.toggle('active-toggle');
+        setTimeout(() => mapInstances.forEach(m => m.invalidateSize()), 300);
+    }
+
+    /* HAD BACAAN KESIHATAN DAN WARNA PENETAPAN */
+    function dapatkanWarna(val, param) {
+        if (val === 'N/A' || val === undefined || val === null) return '#94a3b8';
+        if (param === 'CO') return val < 0.50 ? '#3b82f6' : val <= 0.80 ? '#10b981' : '#f59e0b';
+        if (param === 'NO2') return val < 0.0060 ? '#3b82f6' : val <= 0.0090 ? '#10b981' : '#f59e0b';
+        return val <= 50 ? '#3b82f6' : val <= 100 ? '#10b981' : '#f59e0b';
+    }
+
+    function dapatkanStatusText(val, param) {
+        var dict = kamusBahasa[bahasaSemasa];
+        if (val === 'N/A' || val === undefined || val === null) return { text: dict['no_data'], class: 'status-tiada' };
+        if (param === 'CO') {
+            if (val < 0.50) return { text: dict['good'], class: 'status-baik' };
+            if (val <= 0.80) return { text: dict['moderate'], class: 'status-sederhana' };
+            return { text: dict['unhealthy'], class: 'status-tidak-sihat' };
+        } 
+        else if (param === 'NO2') {
+            if (val < 0.0060) return { text: dict['good'], class: 'status-baik' };
+            if (val <= 0.0090) return { text: dict['moderate'], class: 'status-sederhana' };
+            return { text: dict['unhealthy'], class: 'status-tidak-sihat' };
+        } 
+        else {
+            if (val <= 50) return { text: dict['good'], class: 'status-baik' };
+            if (val <= 100) return { text: dict['moderate'], class: 'status-sederhana' };
+            return { text: dict['unhealthy'], class: 'status-tidak-sihat' };
+        }
+    }
+
+    function tukarModPaparan(mod) {
+        modPaparanSemasa = mod;
+        document.getElementById('container-years-single').style.display = (mod === 'single') ? 'flex' : 'none';
+        document.getElementById('container-years-compare').style.display = (mod === 'compare') ? 'flex' : 'none';
+        rekaSemuaPeta();
     }
 
     function tukarParameter(val) {
         paramSemasa = val;
-        var boxCO = document.getElementById('box-chart-co');
-        var boxNO2 = document.getElementById('box-chart-no2');
+        rekaSemuaPeta();
+    }
 
-        if (val === 'CO') {
-            boxCO.style.display = 'block'; boxNO2.style.display = 'none';
-        } else if (val === 'NO2') {
-            boxCO.style.display = 'none'; boxNO2.style.display = 'block';
+    function fokusLokasiStesen(namaStesen) {
+        stesenDipilih = namaStesen;
+        if (stesenDipilih === 'ALL') {
+            mapInstances.forEach(m => m.setView(PERAK_CENTER, PERAK_ZOOM));
+            return;
+        }
+
+        var stData = dataTahunan[2023].find(s => s.station === namaStesen);
+        if (stData) {
+            mapInstances.forEach(m => {
+                m.setView([stData.lat, stData.lng], 11);
+            });
+
+            if (mapMarkerStores[namaStesen]) {
+                mapMarkerStores[namaStesen].forEach(mk => mk.openPopup());
+            }
+        }
+    }
+
+    /* REKA BENTUK PETA DAN PANEL */
+    function rekaSemuaPeta() {
+        mapInstances.forEach(m => m.remove());
+        mapInstances = [];
+        mapMarkerStores = {};
+
+        var container = document.getElementById('map-container');
+        container.innerHTML = '';
+
+        var dict = kamusBahasa[bahasaSemasa];
+        
+        if (modPaparanSemasa === 'single') {
+            var rad = document.querySelector('input[name="rad_year"]:checked');
+            senaraiTahunAktif = rad ? [rad.value] : ['2023'];
         } else {
-            boxCO.style.display = 'block'; boxNO2.style.display = 'block';
+            senaraiTahunAktif = [];
+            document.querySelectorAll('.chk-year:checked').forEach(c => senaraiTahunAktif.push(c.value));
+            if (senaraiTahunAktif.length === 0) senaraiTahunAktif = ['2023'];
         }
-    }
 
-    function kemaskiniPilihanDropdownPerbandingan() {
-        var sel = document.getElementById('select-compare-year');
-        sel.innerHTML = '';
-        Object.keys(dataTahunan).forEach(function(y) {
-            if (y !== tahunSemasa) {
-                sel.add(new Option(y, y));
-            }
-        });
-    }
+        var totalTahun = senaraiTahunAktif.length;
+        container.className = `grid-${totalTahun}`;
 
-    function bukaAnalisisModal(namaStesen) {
-        var dataS = dataTahunan[tahunSemasa].find(s => s.station === namaStesen);
-        if (!dataS) return;
+        var legMin = "0", legMid = "50", legMax = "101-200";
+        if (paramSemasa === 'CO') { legMin = "0"; legMid = "0.50"; legMax = "0.80+"; } 
+        else if (paramSemasa === 'NO2') { legMin = "0"; legMid = "0.0060"; legMax = "0.0090+"; }
 
-        stesenAktifData = dataS;
-        document.getElementById('modal-station-name').innerText = namaStesen;
-        document.getElementById('lbl-curr-year').innerText = tahunSemasa;
+        var displayParamName = dapatkanNamaParamDisplay();
+        var labelHeaderParam = (paramSemasa === 'CO' || paramSemasa === 'NO2') ? `${displayParamName} (ppm)` : displayParamName;
 
-        kemaskiniPilihanDropdownPerbandingan();
-        document.getElementById('detail-modal').classList.add('active');
+        senaraiTahunAktif.forEach(function(tahun) {
+            var widgetCard = document.createElement('div');
+            widgetCard.className = 'map-card-widget';
 
-        kemaskiniPerbandingan();
-    }
+            var mapWrapper = document.createElement('div');
+            mapWrapper.className = 'map-area-wrapper';
 
-    function kemaskiniPerbandingan() {
-        if (!stesenAktifData) return;
-        var yCompare = document.getElementById('select-compare-year').value;
-        var dataC = dataTahunan[yCompare].find(s => s.station === stesenAktifData.station);
-        var t = terjemahan[bahasaAktif];
+            var badge = document.createElement('div');
+            badge.className = 'map-badge-year';
+            badge.innerText = `${tahun}`;
+            mapWrapper.appendChild(badge);
 
-        if (!dataC) return;
+            var legendDiv = document.createElement('div');
+            legendDiv.className = 'map-legend-inside-left';
+            legendDiv.innerHTML = `
+                <div class="legend-labels"><span>${dict['good']}</span><span>${dict['moderate']}</span><span>${dict['high']}</span></div>
+                <div class="legend-bar"></div>
+                <div class="legend-values"><span>${legMin}</span><span>${legMid}</span><span>${legMax}</span></div>
+            `;
+            mapWrapper.appendChild(legendDiv);
 
-        var diffCO = ((stesenAktifData.co - dataC.co) / dataC.co) * 100;
-        var diffNO2 = ((stesenAktifData.no2 - dataC.no2) / dataC.no2) * 100;
+            var mapDiv = document.createElement('div');
+            mapDiv.id = `map-sub-${tahun}`;
+            mapDiv.className = 'map-instance';
+            mapWrapper.appendChild(mapDiv);
 
-        var symbolCO = diffCO < 0 ? '⬇️ ' : (diffCO > 0 ? '⬆️ ' : '');
-        var colorCO = diffCO < 0 ? '#10b981' : (diffCO > 0 ? '#ef4444' : '#64748b');
+            widgetCard.appendChild(mapWrapper);
 
-        var symbolNO2 = diffNO2 < 0 ? '⬇️ ' : (diffNO2 > 0 ? '⬆️ ' : '');
-        var colorNO2 = diffNO2 < 0 ? '#10b981' : (diffNO2 > 0 ? '#ef4444' : '#64748b');
+            var tableWrapper = document.createElement('div');
+            tableWrapper.className = 'map-table-bottom-wrapper';
 
-        document.getElementById('analysis-summary-box').innerHTML = `
-            <div class="stat-badge">${t.coName}: <span style="color:${colorCO}">${symbolCO}${Math.abs(diffCO).toFixed(2)}%</span></div>
-            <div class="stat-badge">${t.no2Name}: <span style="color:${colorNO2}">${symbolNO2}${Math.abs(diffNO2).toFixed(2)}%</span></div>
-        `;
+            var rawList = dataTahunan[tahun] || [];
+            var list = rawList.filter(st => {
+                if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && st.station === 'Seri Manjung') return false;
+                return true;
+            });
 
-        binaGraf(yCompare, dataC);
-        binaJadual(yCompare, dataC);
-    }
-
-    function binaGraf(yCompare, dataC) {
-        var t = terjemahan[bahasaAktif];
-        var labels = t.bulan;
-
-        if (chartCO) chartCO.destroy();
-        if (chartNO2) chartNO2.destroy();
-
-        var colorCurr = isDarkMode ? '#00ff97' : '#00d2ff';
-        var colorComp = isDarkMode ? '#ff007f' : '#ff6b6b';
-
-        var commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: {
-                        color: isDarkMode ? '#f8fafc' : '#0f172a',
-                        font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
-                    ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { size: 10 } }
-                },
-                y: {
-                    grid: { color: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
-                    ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { size: 10 } }
-                }
-            }
-        };
-
-        var ctxCO = document.getElementById('chartCO').getContext('2d');
-        chartCO = new Chart(ctxCO, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    { 
-                        label: `${t.coName} (${tahunSemasa})`, 
-                        data: stesenAktifData.bulananCO, 
-                        borderColor: colorCurr, 
-                        backgroundColor: colorCurr + '22',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.35 
-                    },
-                    { 
-                        label: `${t.coName} (${yCompare})`, 
-                        data: dataC.bulananCO, 
-                        borderColor: colorComp, 
-                        borderDash: [5,5], 
-                        borderWidth: 2.5,
-                        pointRadius: 3,
-                        fill: false, 
-                        tension: 0.35 
-                    }
-                ]
-            },
-            options: commonOptions
-        });
-
-        var ctxNO2 = document.getElementById('chartNO2').getContext('2d');
-        chartNO2 = new Chart(ctxNO2, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    { 
-                        label: `${t.no2Name} (${tahunSemasa})`, 
-                        data: stesenAktifData.bulananNO2, 
-                        borderColor: colorCurr, 
-                        backgroundColor: colorCurr + '22',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.35 
-                    },
-                    { 
-                        label: `${t.no2Name} (${yCompare})`, 
-                        data: dataC.bulananNO2, 
-                        borderColor: colorComp, 
-                        borderDash: [5,5], 
-                        borderWidth: 2.5,
-                        pointRadius: 3,
-                        fill: false, 
-                        tension: 0.35 
-                    }
-                ]
-            },
-            options: commonOptions
-        });
-    }
-
-    function binaJadual(yCompare, dataC) {
-        var t = terjemahan[bahasaAktif];
-        var html = `
-            <table class="data-table">
-                <thead>
+            var rowsHtml = '';
+            list.forEach(function(st) {
+                var valRaw = dapatkanNilaiParam(st, paramSemasa);
+                var valFormatted = formatNilai(valRaw);
+                var stObj = dapatkanStatusText(valRaw === 'N/A' ? 'N/A' : valRaw, paramSemasa);
+                
+                rowsHtml += `
                     <tr>
-                        <th>${t.tblMonth}</th>
-                        <th>${t.coName}<br>(${tahunSemasa})</th>
-                        <th>${t.coName}<br>(${yCompare})</th>
-                        <th>${t.no2Name}<br>(${tahunSemasa})</th>
-                        <th>${t.no2Name}<br>(${yCompare})</th>
+                        <td title="${st.station}"><b>${st.station}</b></td>
+                        <td><b>${valFormatted}</b></td>
+                        <td><span class="status-badge ${stObj.class}">${stObj.text}</span></td>
                     </tr>
-                </thead>
-                <tbody>`;
-        for (var i = 0; i < 12; i++) {
-            html += `<tr>
-                <td><strong>${t.bulan[i]}</strong></td>
-                <td>${stesenAktifData.bulananCO[i].toFixed(4)}</td>
-                <td>${dataC.bulananCO[i].toFixed(4)}</td>
-                <td>${stesenAktifData.bulananNO2[i].toFixed(4)}</td>
-                <td>${dataC.bulananNO2[i].toFixed(4)}</td>
-            </tr>`;
+                `;
+            });
+
+            tableWrapper.innerHTML = `
+                <div class="bottom-split-left">
+                    <div class="table-bottom-title">
+                        <span>${dict['station_info']} (${tahun})</span>
+                        <span style="font-size:0.6rem; color:var(--text-muted); font-weight:600;">${labelHeaderParam}</span>
+                    </div>
+                    <table class="side-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 44%;">${dict['station']}</th>
+                                <th style="width: 22%;">${dict['reading']}</th>
+                                <th style="width: 34%;">${dict['status']}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+            `;
+            widgetCard.appendChild(tableWrapper);
+            container.appendChild(widgetCard);
+
+            var m = L.map(mapDiv.id, { zoomControl: true, attributionControl: false }).setView(PERAK_CENTER, PERAK_ZOOM);
+            var tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+            L.tileLayer(tileUrl, { subdomains: 'abcd', maxZoom: 19 }).addTo(m);
+
+            if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
+                L.geoJSON(json_DAERAH_PERAK_0, { style: { color: '#641c2a', weight: 1.5, fillColor: '#802336', fillOpacity: 0.03 } }).addTo(m);
+            }
+
+            list.forEach(function(st) {
+                var valRaw = dapatkanNilaiParam(st, paramSemasa);
+                var valFormatted = formatNilai(valRaw);
+                var warna = dapatkanWarna(valRaw, paramSemasa);
+
+                var customIcon = L.divIcon({
+                    className: 'custom-pulsing-marker',
+                    html: `
+                        <div class="pulse-ring" style="background-color: ${warna};"></div>
+                        <div class="triangle-badge" style="--triangle-color: ${warna};">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                    `,
+                    iconSize: [28, 28], iconAnchor: [14, 26]
+                });
+
+                var mk = L.marker([st.lat, st.lng], { icon: customIcon }).addTo(m);
+
+                var val18 = formatNilai(dapatkanNilaiParam(dataTahunan[2018].find(s => s.station === st.station), 'IPU'));
+                var val20 = formatNilai(dapatkanNilaiParam(dataTahunan[2020].find(s => s.station === st.station), 'IPU'));
+                var val23 = formatNilai(dapatkanNilaiParam(dataTahunan[2023].find(s => s.station === st.station), 'IPU'));
+
+                var co18 = formatNilai(dapatkanNilaiParam(dataTahunan[2018].find(s => s.station === st.station), 'CO'));
+                var co20 = formatNilai(dapatkanNilaiParam(dataTahunan[2020].find(s => s.station === st.station), 'CO'));
+                var co23 = formatNilai(dapatkanNilaiParam(dataTahunan[2023].find(s => s.station === st.station), 'CO'));
+
+                var no18 = formatNilai(dapatkanNilaiParam(dataTahunan[2018].find(s => s.station === st.station), 'NO2'));
+                var no20 = formatNilai(dapatkanNilaiParam(dataTahunan[2020].find(s => s.station === st.station), 'NO2'));
+                var no23 = formatNilai(dapatkanNilaiParam(dataTahunan[2023].find(s => s.station === st.station), 'NO2'));
+
+                var gmapsUrl = `https://www.google.com/maps?q=${st.lat},${st.lng}`;
+                var ipuLabelText = bahasaSemasa === 'en' ? 'API' : 'IPU';
+
+                var popupContent = `
+                    <div class="station-popup-card">
+                        <h4>${st.station.toUpperCase()}</h4>
+                        <a href="${gmapsUrl}" target="_blank" class="gmaps-btn"><i class="fas fa-map-marker-alt"></i> ${dict['open_gmaps']}</a>
+                        
+                        <div class="popup-param-sec">
+                            <div class="popup-param-title">${ipuLabelText}</div>
+                            <div class="popup-data-grid"><span>2018: <b>${val18}</b></span><span>2020: <b>${val20}</b></span><span>2023: <b>${val23}</b></span></div>
+                        </div>
+                        <div class="popup-param-sec">
+                            <div class="popup-param-title">CO (ppm)</div>
+                            <div class="popup-data-grid"><span>2018: <b>${co18}</b></span><span>2020: <b>${co20}</b></span><span>2023: <b>${co23}</b></span></div>
+                        </div>
+                        <div class="popup-param-sec">
+                            <div class="popup-param-title">NO₂ (ppm)</div>
+                            <div class="popup-data-grid"><span>2018: <b>${no18}</b></span><span>2020: <b>${no20}</b></span><span>2023: <b>${no23}</b></span></div>
+                        </div>
+
+                        <button class="popup-btn-analisis" onclick="bukaModalStesen('${st.station}')">${dict['view_analysis']}</button>
+                    </div>
+                `;
+
+                mk.bindPopup(popupContent);
+
+                if (!mapMarkerStores[st.station]) mapMarkerStores[st.station] = [];
+                mapMarkerStores[st.station].push(mk);
+
+                var offsetVal = [0, -20];
+                var directionVal = 'top';
+
+                if (st.station === 'Tasek, Ipoh') {
+                    offsetVal = [0, -26];
+                    directionVal = 'top';
+                } else if (st.station === 'Pegoh, Ipoh') {
+                    offsetVal = [0, 10];
+                    directionVal = 'bottom';
+                } else if (st.station === 'Taiping') {
+                    offsetVal = [-15, -10];
+                    directionVal = 'left';
+                }
+
+                var labelText = `${st.station}: <b>${valFormatted}</b>`;
+                mk.bindTooltip(labelText, { permanent: false, direction: directionVal, className: 'map-station-label', offset: offsetVal });
+            });
+
+            m.on('move', function() {
+                if (isSyncing) return;
+                isSyncing = true;
+                var c = m.getCenter(); var z = m.getZoom();
+                mapInstances.forEach(otherMap => {
+                    if (otherMap !== m) otherMap.setView(c, z, { animate: false });
+                });
+                isSyncing = false;
+            });
+
+            mapInstances.push(m);
+        });
+
+        setTimeout(() => mapInstances.forEach(m => m.invalidateSize()), 200);
+    }
+
+    function paparPetaAction() {
+        rekaSemuaPeta();
+    }
+
+    /* EXPORT PDF PREVIEW */
+    function bukaPreviewPDF(pdfMode) {
+        var tahunDipilih = senaraiTahunAktif;
+        var currentCenter = PERAK_CENTER;
+        var currentZoom = PERAK_ZOOM;
+
+        var dict = kamusBahasa[bahasaSemasa];
+        var displayParamName = dapatkanNamaParamDisplay();
+        var fullParamTitle = paramSemasa === 'CO' ? `Karbon Monoksida (CO)` : (paramSemasa === 'NO2' ? `Nitrogen Dioksida (NO2)` : dict['param_ipu_label']);
+        
+        document.getElementById('pdf-subtitle-param').innerText = dict['based_on'] + fullParamTitle;
+        document.getElementById('pdf-subtitle-years').innerText = dict['year'] + ' ' + tahunDipilih.join(', ');
+        document.getElementById('pdf-info-param-name').innerText = fullParamTitle;
+
+        if (paramSemasa === 'CO') {
+            document.getElementById('lbl-pdf-leg-1').innerText = dict['good'] + " (< 0.50)";
+            document.getElementById('lbl-pdf-leg-2').innerText = dict['moderate'] + " (0.50 - 0.80)";
+            document.getElementById('lbl-pdf-leg-3').innerText = dict['unhealthy'] + " (> 0.80)";
+        } else if (paramSemasa === 'NO2') {
+            document.getElementById('lbl-pdf-leg-1').innerText = dict['good'] + " (< 0.0060)";
+            document.getElementById('lbl-pdf-leg-2').innerText = dict['moderate'] + " (0.0060 - 0.0090)";
+            document.getElementById('lbl-pdf-leg-3').innerText = dict['unhealthy'] + " (> 0.0090)";
+        } else {
+            document.getElementById('lbl-pdf-leg-1').innerText = dict['good'] + " (0 - 50)";
+            document.getElementById('lbl-pdf-leg-2').innerText = dict['moderate'] + " (51 - 100)";
+            document.getElementById('lbl-pdf-leg-3').innerText = dict['unhealthy'] + " (101 - 200)";
         }
-        html += `</tbody></table>`;
-        document.getElementById('table-container').innerHTML = html;
+
+        var today = new Date();
+        document.getElementById('pdf-export-date').innerText = today.toLocaleDateString(bahasaSemasa === 'ms' ? 'ms-MY' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        var containerMaps = document.getElementById('pdf-maps-list');
+        containerMaps.innerHTML = '';
+
+        pdfMapInstances.forEach(pm => pm.remove());
+        pdfMapInstances = [];
+
+        Object.keys(pdfChartInstances).forEach(k => { if (pdfChartInstances[k]) pdfChartInstances[k].destroy(); });
+        pdfChartInstances = {};
+
+        if (pdfMode === 'map') {
+            tahunDipilih.forEach(function(yr) {
+                var col = document.createElement('div');
+                col.className = 'pdf-map-column';
+
+                var rawList = dataTahunan[yr] || [];
+                var list = rawList.filter(st => {
+                    if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && st.station === 'Seri Manjung') return false;
+                    return true;
+                });
+
+                var tableRows = '';
+                list.forEach(st => {
+                    var valRaw = dapatkanNilaiParam(st, paramSemasa);
+                    var valFormatted = formatNilai(valRaw);
+                    var stObj = dapatkanStatusText(valRaw === 'N/A' ? 'N/A' : valRaw, paramSemasa);
+                    tableRows += `
+                        <tr>
+                            <td title="${st.station}"><b>${st.station}</b></td>
+                            <td><b>${valFormatted}</b></td>
+                            <td><span class="status-badge ${stObj.class}">${stObj.text}</span></td>
+                        </tr>
+                    `;
+                });
+
+                col.innerHTML = `
+                    <div class="pdf-map-header">${dict['station_info'].toUpperCase()} — ${displayParamName} (${yr})</div>
+                    <div class="pdf-map-box" id="pdf-map-render-${yr}"></div>
+                    <div style="padding:6px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #641c2a; margin-bottom: 4px;">${dict['station_info']} (${yr})</div>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40%;">${dict['station']}</th>
+                                    <th style="width:25%;">${displayParamName} ${(paramSemasa==='CO'||paramSemasa==='NO2')?'(ppm)':''}</th>
+                                    <th style="width:35%;">${dict['status']}</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                `;
+                containerMaps.appendChild(col);
+            });
+
+            document.getElementById('pdf-preview-modal').classList.add('active');
+
+            setTimeout(function(){
+                tahunDipilih.forEach(function(yr) {
+                    var miniMap = L.map(`pdf-map-render-${yr}`, { 
+                        zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false
+                    }).setView(currentCenter, currentZoom);
+
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd' }).addTo(miniMap);
+                    
+                    if (typeof json_DAERAH_PERAK_0 !== 'undefined') {
+                        L.geoJSON(json_DAERAH_PERAK_0, { style: { color: '#641c2a', weight: 1.2, fillColor: '#802336', fillOpacity: 0.05 } }).addTo(miniMap);
+                    }
+                    
+                    var rawList = dataTahunan[yr] || [];
+                    var list = rawList.filter(st => {
+                        if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && st.station === 'Seri Manjung') return false;
+                        return true;
+                    });
+
+                    list.forEach(st => {
+                        var valRaw = dapatkanNilaiParam(st, paramSemasa);
+                        var valFormatted = formatNilai(valRaw);
+                        var warna = dapatkanWarna(valRaw, paramSemasa);
+                        
+                        var offsetVal = [0, -8];
+                        var directionVal = 'top';
+
+                        if (st.station === 'Tasek, Ipoh') { offsetVal = [0, -12]; }
+                        else if (st.station === 'Pegoh, Ipoh') { offsetVal = [0, 8]; directionVal = 'bottom'; }
+                        else if (st.station === 'Taiping') { offsetVal = [-10, -5]; directionVal = 'left'; }
+
+                        var mk = L.circleMarker([st.lat, st.lng], { radius: 6, fillColor: warna, color: '#ffffff', weight: 1.5, fillOpacity: 1 }).addTo(miniMap);
+                        mk.bindTooltip(`${st.station}: <b>${valFormatted}</b>`, { permanent: true, direction: directionVal, className: 'map-station-label', offset: offsetVal });
+                    });
+
+                    pdfMapInstances.push(miniMap);
+                });
+            }, 300);
+
+        } 
+        else if (pdfMode === 'chart') {
+            var col = document.createElement('div');
+            col.className = 'pdf-map-column';
+            col.style.width = '100%';
+
+            var pdfChartId = `pdf-chart-combined`;
+
+            col.innerHTML = `
+                <div class="pdf-map-header">${dict['chart_comparison']}</div>
+                <div style="flex:1; padding:16px; position:relative; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center;">
+                    <canvas id="${pdfChartId}"></canvas>
+                </div>
+            `;
+            containerMaps.appendChild(col);
+
+            var listStesen = dataTahunan[2023].filter(st => {
+                if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && st.station === 'Seri Manjung') return false;
+                return true;
+            }).map(st => st.station.replace(', Ipoh', ''));
+
+            var colorMap = {
+                '2018': '#94a3b8',
+                '2020': '#2563eb',
+                '2023': '#641c2a'
+            };
+
+            var datasetsCombined = [];
+
+            ['2018', '2020', '2023'].forEach(function(yr) {
+                var rawList = dataTahunan[yr] || [];
+                var dataPdf = [];
+
+                dataTahunan[2023].forEach(stRef => {
+                    if ((paramSemasa === 'CO' || paramSemasa === 'NO2') && stRef.station === 'Seri Manjung') return;
+                    var st = rawList.find(s => s.station === stRef.station);
+                    var valRaw = st ? dapatkanNilaiParam(st, paramSemasa) : 'N/A';
+                    dataPdf.push(valRaw === 'N/A' ? null : valRaw);
+                });
+
+                datasetsCombined.push({
+                    label: `${dict['year']} ${yr}`,
+                    data: dataPdf,
+                    borderColor: colorMap[yr],
+                    backgroundColor: colorMap[yr],
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.35,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                });
+            });
+
+            document.getElementById('pdf-preview-modal').classList.add('active');
+
+            setTimeout(function() {
+                var ctxPdf = document.getElementById(pdfChartId);
+                if (ctxPdf) {
+                    pdfChartInstances['combined'] = new Chart(ctxPdf, {
+                        type: 'line',
+                        data: {
+                            labels: listStesen,
+                            datasets: datasetsCombined
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: false,
+                            plugins: { 
+                                legend: { display: true, position: 'top', labels: { font: { size: 12, weight: 'bold' } } },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.dataset.label}: ${formatNilai(context.parsed.y)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: { 
+                                x: { ticks: { font: { size: 10, weight: 'bold' } }, grid: { display: false } }, 
+                                y: { ticks: { font: { size: 10 } } } 
+                            }
+                        }
+                    });
+                }
+            }, 150);
+        }
     }
 
-    function bukaTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    function tutupPDFModal() { document.getElementById('pdf-preview-modal').classList.remove('active'); }
+    function cetakPDF() { window.print(); }
 
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
+    /* MODAL TERPERINCI STESEN */
+    var chartModalInst = null;
+    function bukaModalStesen(namaStesen) {
+        document.getElementById('modal-station-name').innerText = namaStesen;
+        document.getElementById('detail-modal').classList.add('active');
+        kemaskiniModalContent(namaStesen);
     }
 
-    function tutupModal() {
-        document.getElementById('detail-modal').classList.remove('active');
-    }
+    function tutupModal() { document.getElementById('detail-modal').classList.remove('active'); }
 
-    function toggleDarkMode() {
-        isDarkMode = !isDarkMode;
-        document.body.classList.toggle('dark-mode');
-        document.getElementById('theme-icon').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-        tileLayer.setUrl(isDarkMode ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
+    function kemaskiniModalContent(namaStesen) {
+        var bulan = bahasaSemasa === 'ms' 
+            ? ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"]
+            : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         
-        if (stesenAktifData) kemaskiniPerbandingan();
+        var dict = kamusBahasa[bahasaSemasa];
+        var displayParamName = dapatkanNamaParamDisplay();
+        var datasets = [];
+        var htmlTable = `<table class="data-table"><thead><tr><th>${dict['month']}</th>`;
+        
+        ['2018', '2020', '2023'].forEach(function(yr) {
+            htmlTable += `<th>${displayParamName} ${(paramSemasa==='CO'||paramSemasa==='NO2')?'(ppm)':''} (${yr})</th>`;
+            var list = dataTahunan[yr] || [];
+            var st = list.find(s => s.station === namaStesen);
+            var isNoData = (namaStesen === "Seri Manjung" && (paramSemasa === "CO" || paramSemasa === "NO2"));
+            
+            if (st) {
+                datasets.push({
+                    label: `${displayParamName} (${yr})`,
+                    data: isNoData ? [null,null,null,null,null,null,null,null,null,null,null,null] : st.bulanan,
+                    borderColor: yr === '2023' ? '#641c2a' : yr === '2020' ? '#2563eb' : '#94a3b8',
+                    backgroundColor: yr === '2023' ? '#641c2a' : yr === '2020' ? '#2563eb' : '#94a3b8',
+                    fill: false, tension: 0.3
+                });
+            }
+        });
+
+        htmlTable += '</tr></thead><tbody>';
+        for (var i = 0; i < 12; i++) {
+            htmlTable += `<tr><td><b>${bulan[i]}</b></td>`;
+            ['2018', '2020', '2023'].forEach(function(yr) {
+                var list = dataTahunan[yr] || [];
+                var st = list.find(s => s.station === namaStesen);
+                var isNoData = (namaStesen === "Seri Manjung" && (paramSemasa === "CO" || paramSemasa === "NO2"));
+                htmlTable += `<td>${isNoData ? 'N/A' : (st ? formatNilai(st.bulanan[i]) : '-')}</td>`;
+            });
+            htmlTable += '</tr>';
+        }
+        htmlTable += '</tbody></table>';
+
+        document.getElementById('table-container').innerHTML = htmlTable;
+
+        if (chartModalInst) chartModalInst.destroy();
+        var ctx = document.getElementById('chartModal').getContext('2d');
+        chartModalInst = new Chart(ctx, {
+            type: 'line',
+            data: { labels: bulan, datasets: datasets },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
     }
 
-    function tukarBahasa() {
-        bahasaAktif = bahasaAktif === 'ms' ? 'en' : 'ms';
-        var t = terjemahan[bahasaAktif];
-
-        document.getElementById('lang-text').innerText = bahasaAktif === 'ms' ? 'EN' : 'BM';
-        document.getElementById('txt-title').innerText = t.title;
-        document.getElementById('txt-subtitle').innerText = t.subtitle;
-        document.getElementById('lbl-year-filter').innerText = t.lblYear;
-        document.getElementById('lbl-param-filter').innerText = t.lblParam;
-        
-        document.getElementById('opt-all').innerText = t.optAll;
-        document.getElementById('opt-co').innerText = t.optCO;
-        document.getElementById('opt-no2').innerText = t.optNO2;
-
-        document.getElementById('lgd-good').innerText = t.lgdGood;
-        document.getElementById('lgd-mod').innerText = t.lgdMod;
-        document.getElementById('lgd-high').innerText = t.lgdHigh;
-
-        document.getElementById('modal-station-sub').innerText = t.modalSub;
-        document.getElementById('lbl-compare-prefix').innerHTML = `${t.comparePrefix}<strong id="lbl-curr-year">${tahunSemasa}</strong>${t.compareWith}`;
-        
-        document.getElementById('tab-btn-graf').innerHTML = `<i class="fas fa-chart-line"></i> ${t.btnGraf}`;
-        document.getElementById('tab-btn-jadual').innerHTML = `<i class="fas fa-table"></i> ${t.btnJadual}`;
-
-        kemaskiniMarkers();
-        if (stesenAktifData) kemaskiniPerbandingan();
-    }
-
-    window.onload = initMap;
+    rekaSemuaPeta();
     </script>
 </body>
 </html>
